@@ -1,45 +1,31 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QFileDialog, QListView, QAbstractItemView
-from PyQt5.QtCore import QStringListModel
+from PyQt5.QtWidgets import *
 
 
 class FuncButtons(QWidget):
+    """ 本类包含了所有功能按钮以及功能按钮的槽函数
+        __self_upload：把语音文件上传转写后返回语音对应的文本文件
+    """
     def __init__(self):
         super(FuncButtons, self).__init__()
         self.__init_control()
 
     def __init_control(self):
+        # 创建功能按键
+        self.__btn_upload = QPushButton('语音转写')
+
+        # 创建布局管理器，管理功能按键
         vlayout = QVBoxLayout()
-        self.__btn_upload = QPushButton('上传文件')
-        self.__btn_open_files = QPushButton('打开文件')
-        self.__list_files = QListView()
-        self.__list_files.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+        # 添加控件到布局管理器
         vlayout.addWidget(self.__btn_upload)
-        vlayout.addWidget(self.__btn_open_files)
-        vlayout.addWidget(self.__list_files)
 
-        self.btn_count = vlayout.count()
         self.setLayout(vlayout)
 
-        self.__btn_open_files.clicked.connect(self.on_btn_open_files_clicked)
+        # 绑定功能按钮的槽函数
         self.__btn_upload.clicked.connect(self.on_btn_upload_clicked)
-        self.__list_files.clicked.connect(self.on_list_files_cliked)
 
+    # 语音上传转写功能按钮槽函数
     def on_btn_upload_clicked(self):
         files = QFileDialog.getOpenFileNames(self, '选择文件',
                                              '/Users/wangjunqiang/PycharmProjects/GUI_Project', 'All Files (*);;')
-
-
-    def on_btn_open_files_clicked(self):
-        files = QFileDialog.getOpenFileNames(self, '打开文件',
-                                             '/Users/wangjunqiang/PycharmProjects/GUI_Project', 'All Files (*);;')
-
-        self.files = list(files)[:-1][0]
-
-        slm = QStringListModel()
-        slm.setStringList(self.files)
-
-        self.__list_files.setModel(slm)
-
-    def on_list_files_cliked(self, index):
-        print(self.files[index.row()])
+        print(files[0])

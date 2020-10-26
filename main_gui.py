@@ -1,28 +1,29 @@
-from PyQt5.QtWidgets import QMainWindow, QGridLayout, QWidget, QStackedLayout, QPlainTextEdit, QLabel
+from PyQt5.QtWidgets import *
 from func_buttons import FuncButtons
-from control_btn import CtrBottoms
+from func_play import Player
 
 
 class MainGui(QMainWindow):
+    """ 窗口主界面
+
+    """
     def __init__(self):
         super().__init__()
         self.__init_control()
 
+    # 初始化控件的位置
     def __init_control(self):
         glayout = QGridLayout()
-        slayout = QStackedLayout()
-        text_edit = QPlainTextEdit()
-        label = QLabel("test1")
 
-        slayout.addWidget(text_edit)
-        slayout.addWidget(label)
+        text_edit = QPlainTextEdit()
 
         func_buttons = FuncButtons()
-        ctr_buttons = CtrBottoms()
+        play = Player()
 
-        glayout.addWidget(func_buttons, 0, 0, func_buttons.btn_count, 1)
-        glayout.addLayout(slayout, 0, 1)
-        glayout.addWidget(ctr_buttons, 1, 1)
+        glayout.addWidget(play, 0, 0)
+        glayout.addWidget(text_edit, 0, 1)
+        glayout.addWidget(QLabel('功能区:'))
+        glayout.addWidget(func_buttons)
 
         widget_layout = QWidget()
         widget_layout.setLayout(glayout)
