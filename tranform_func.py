@@ -8,6 +8,7 @@ class TransformFunc(QWidget):
     """
     def __init__(self):
         super(TransformFunc, self).__init__()
+        self.__files = []
         self.__init_control()
 
     def __init_control(self):
@@ -32,5 +33,11 @@ class TransformFunc(QWidget):
 
     # 语音上传转写功能按钮槽函数
     def on_btn_upload_clicked(self):
-        files = QFileDialog.getOpenFileNames(self, '选择文件', os.getcwd(), 'All Files (*);;')
-        print(files[0])
+        if not self.__files:
+            QMessageBox(QMessageBox.Warning, '警告', '请打开要转写的语音文件').exec()
+        else:
+            for file in self.__files:
+                print(file.full_path)
+
+    def get_files(self, files):
+        self.__files = files

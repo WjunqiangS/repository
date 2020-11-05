@@ -1,21 +1,24 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QStringListModel
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QStringListModel, pyqtSignal, QPoint
+from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import Qt
+from file import File
 import os
 
 class Player(QWidget):
     """ 本类包含了打开文件、文件列表、还有声音播放的功能以及控制按钮
         __btn_open_files: 打开文件按钮
         __list_files: 文件列表
-        files: 选择打开的文件路径
+        files_path: 选择打开的文件路径
     """
+    files_signal = pyqtSignal(list)
+
     def __init__(self):
         super(Player, self).__init__()
+        self.files = []
         self.__init_control()
 
     def __init_control(self):
-
         # 创建布局管理器，管理功能按键
         glayout = QGridLayout()
         vlayout = QVBoxLayout()
@@ -24,7 +27,6 @@ class Player(QWidget):
         self.__btn_open_files = QPushButton('打开文件')
         self.__list_files = QListView()
         self.__list_files.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.files = []
 
 
         # 播放控制按钮
@@ -66,19 +68,37 @@ class Player(QWidget):
         # 绑定按键和槽函数
         self.__btn_open_files.clicked.connect(self.on_btn_open_files_clicked)
         self.__list_files.clicked.connect(self.on_list_files_cliked)
+        #设置菜单
+        self.__list_files.setContextMenuPolicy(3)
+        self.__list_files.customContextMenuRequested[QPoint].connect(self.list_fils_right_key_menu)
 
     # 打开文件按钮的槽函数
     def on_btn_open_files_clicked(self):
-        files = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'All Files (*);;')
+        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'All Files (*);;')[0]
 
-        for str in files[0]:
-            self.files.append(os.path.basename(str))
+        # 把打开的文件都保存到文件列表中
+        for str in files_path:
+            exist_flag = 0
+            for exit_file in self.files:
+                if os.path.basename(str) == exit_file.file_name:
+                    exist_flag = 1
+                    break
+            if not exist_flag:
+                file = File(os.path.basename(str), os.path.dirname(str))
+                self.files.append(file)
 
         slm = QStringListModel()
-        slm.setStringList(self.files)
-
+        slm.setStringList([file.file_name for file in self.files])
         self.__list_files.setModel(slm)
+
+        # 打开文件之后给开始转写发送信号，表示已经拿到文件
+        self.files_signal.emit(self.files)
 
     # 文件列表点击的槽函数
     def on_list_files_cliked(self, index):
-        print(self.files[index.row()])
+        print(self.files[index.row()].file_name)
+
+    def list_fils_right_key_menu(self, point):
+        menu = QMenu()
+        menu.addAction('删除')
+        menu.exec_(QCursor.pos())

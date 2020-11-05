@@ -16,21 +16,21 @@ class MainGui(QMainWindow):
         glayout = QGridLayout()
 
         # 创建语音播放控件和语音转写控件
-        transform_func = TransformFunc()
-        play = Player()
+        self.__transform_func = TransformFunc()
+        self.__player = Player()
 
         # 把控件添加到相应的位置
-        glayout.addWidget(play)
-        glayout.addWidget(transform_func)
-
+        glayout.addWidget(self.__player)
+        glayout.addWidget(self.__transform_func)
         widget_layout = QWidget()
         widget_layout.setLayout(glayout)
         self.setCentralWidget(widget_layout)
 
-        # 获取当前显示器的大小
+        # 获取当前显示器的大小，并设置窗口的大小
         desktop = QApplication.desktop()
         rect_size = desktop.screenGeometry()
         width = rect_size.width()
-
-
         self.setMinimumWidth(width * 0.5)
+
+        # 把player的信号与transform的函数绑定
+        self.__player.files_signal.connect(self.__transform_func.get_files)
