@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QStringListModel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-
+import os
 
 class Player(QWidget):
     """ 本类包含了打开文件、文件列表、还有声音播放的功能以及控制按钮
@@ -24,6 +24,7 @@ class Player(QWidget):
         self.__btn_open_files = QPushButton('打开文件')
         self.__list_files = QListView()
         self.__list_files.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.files = []
 
 
         # 播放控制按钮
@@ -55,6 +56,7 @@ class Player(QWidget):
         glayout.addWidget(self.__play_btn, 1, 2, 1, 2)
         glayout.addWidget(self.__forward_btn, 1, 4, 1, 2)
         glayout.addWidget(self.__volume_btn, 1, 6, 1, 2)
+        vlayout.addWidget(QLabel('语音播放区：'))
         vlayout.addWidget(self.__btn_open_files)
         vlayout.addWidget(self.__list_files)
         vlayout.addLayout(glayout)
@@ -67,10 +69,10 @@ class Player(QWidget):
 
     # 打开文件按钮的槽函数
     def on_btn_open_files_clicked(self):
-        files = QFileDialog.getOpenFileNames(self, '打开文件',
-                                             '/Users/wangjunqiang/PycharmProjects/GUI_Project', 'All Files (*);;')
+        files = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'All Files (*);;')
 
-        self.files = files[0]
+        for str in files[0]:
+            self.files.append(os.path.basename(str))
 
         slm = QStringListModel()
         slm.setStringList(self.files)

@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from func_buttons import FuncButtons
+from tranform_func import TransformFunc
 from func_play import Player
 
 
@@ -15,16 +15,22 @@ class MainGui(QMainWindow):
     def __init_control(self):
         glayout = QGridLayout()
 
-        text_edit = QPlainTextEdit()
-
-        func_buttons = FuncButtons()
+        # 创建语音播放控件和语音转写控件
+        transform_func = TransformFunc()
         play = Player()
 
-        glayout.addWidget(play, 0, 0)
-        glayout.addWidget(text_edit, 0, 1)
-        glayout.addWidget(QLabel('功能区:'))
-        glayout.addWidget(func_buttons)
+        # 把控件添加到相应的位置
+        glayout.addWidget(play)
+        glayout.addWidget(transform_func)
 
         widget_layout = QWidget()
         widget_layout.setLayout(glayout)
         self.setCentralWidget(widget_layout)
+
+        # 获取当前显示器的大小
+        desktop = QApplication.desktop()
+        rect_size = desktop.screenGeometry()
+        width = rect_size.width()
+
+
+        self.setMinimumWidth(width * 0.5)
