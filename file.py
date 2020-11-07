@@ -5,6 +5,7 @@ class File():
         self.file_name = file_name
         self.file_path = file_path
         self.finish_transform = False
+        self.transforming = False
         self.file_txt = ''
         self.full_path = os.path.join(file_path, file_name)
 

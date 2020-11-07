@@ -3,7 +3,9 @@
 # @Author  : lovemefan
 # @File    : client.py
 import time
+import os
 from socket import socket, AF_INET, SOCK_STREAM
+from PyQt5.QtWidgets import *
 
 
 def send_file(file_name, ip, port):
@@ -13,13 +15,14 @@ def send_file(file_name, ip, port):
     print(f"[*]正在连接{ip}:{port}")
     clinet = socket(AF_INET, SOCK_STREAM)
 
-    clinet.connect((ip, port))
+    if clinet.connect((ip, port)) == 61:
+        QMessageBox(QMessageBox.Warning, '警告', '连接不上服务器').exec()
 
     file = open(file_name, 'rb')
     while True:
         # 接受套接字的大小
         data = file.read(10*1024*1024)
-        clinet.sendall(file_name.split('/')[-1].encode('utf-8'))
+        clinet.sendall(os.path.basename(file_name).encode('utf-8'))
         time.sleep(0.5)
         if str(data) != "b''":
             clinet.send(data)
@@ -44,5 +47,3 @@ def send_file(file_name, ip, port):
     print(f"已经运行{round(AlL_time, 1)}s")
     return taskid
 
-#   str = json.loads(res.text)['result']['tasks_info'][0]['task_result']['result'][0]
-#   print(str)

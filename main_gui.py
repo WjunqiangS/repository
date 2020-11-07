@@ -34,3 +34,4 @@ class MainGui(QMainWindow):
 
         # 把player的信号与transform的函数绑定
         self.__player.files_signal.connect(self.__transform_func.get_files)
+        self.__player.select_file.connect(self.__transform_func.show_file_txt)

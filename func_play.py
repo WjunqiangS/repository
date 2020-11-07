@@ -11,7 +11,8 @@ class Player(QWidget):
         __list_files: 文件列表
         files_path: 选择打开的文件路径
     """
-    files_signal = pyqtSignal(list)
+    files_signal = pyqtSignal(File)
+    select_file = pyqtSignal(str)
 
     def __init__(self):
         super(Player, self).__init__()
@@ -74,7 +75,7 @@ class Player(QWidget):
 
     # 打开文件按钮的槽函数
     def on_btn_open_files_clicked(self):
-        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'All Files (*);;')[0]
+        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'Audio Files (*.wav);;')[0]
 
         # 把打开的文件都保存到文件列表中
         for str in files_path:
@@ -86,17 +87,17 @@ class Player(QWidget):
             if not exist_flag:
                 file = File(os.path.basename(str), os.path.dirname(str))
                 self.files.append(file)
+                # 打开文件之后给开始转写发送信号，表示已经拿到文件
+                self.files_signal.emit(file)
 
         slm = QStringListModel()
         slm.setStringList([file.file_name for file in self.files])
         self.__list_files.setModel(slm)
 
-        # 打开文件之后给开始转写发送信号，表示已经拿到文件
-        self.files_signal.emit(self.files)
 
     # 文件列表点击的槽函数
     def on_list_files_cliked(self, index):
-        print(self.files[index.row()].file_name)
+        self.select_file.emit(self.files[index.row()].file_name)
 
     def list_fils_right_key_menu(self, point):
         menu = QMenu()
