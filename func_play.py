@@ -75,7 +75,7 @@ class Player(QWidget):
 
     # 打开文件按钮的槽函数
     def on_btn_open_files_clicked(self):
-        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'Audio Files (*.wav);;')[0]
+        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'Audio Files (*.[V|v]3);;Audio Files (*.wav);;')[0]
 
         # 把打开的文件都保存到文件列表中
         for str in files_path:
@@ -93,7 +93,6 @@ class Player(QWidget):
         slm = QStringListModel()
         slm.setStringList([file.file_name for file in self.files])
         self.__list_files.setModel(slm)
-
 
     # 文件列表点击的槽函数
     def on_list_files_cliked(self, index):
