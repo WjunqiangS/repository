@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import *
-from tranform_func import TransformFunc
-from func_play import PlayerGui
+from tranformUi import TransformGui
+from playerUi import PlayerGui
 
 
 class MainGui(QMainWindow):
@@ -16,7 +16,7 @@ class MainGui(QMainWindow):
         glayout = QGridLayout()
 
         # 创建语音播放控件和语音转写控件
-        self.__transform_func = TransformFunc()
+        self.__transform_func = TransformGui()
         self.__player = PlayerGui()
 
         # 把控件添加到相应的位置

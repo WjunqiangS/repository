@@ -7,12 +7,12 @@ import os
 import re
 
 
-class TransformFunc(QWidget):
+class TransformGui(QWidget):
     """ 本类包含了所有功能按钮以及功能按钮的槽函数
         __self_upload：把语音文件上传转写后返回语音对应的文本文件
     """
     def __init__(self):
-        super(TransformFunc, self).__init__()
+        super(TransformGui, self).__init__()
         self.voice_trans_thread = None
         self.__files = []
         self.__init_control()
@@ -82,6 +82,7 @@ class TransformFunc(QWidget):
 
         # 退出线程
         self.voice_trans_thread.quit()
+        self.voice_trans_thread = None
 
     # 点击文件列表的时候，显示选中文件的内容
     def show_file_txt(self, file_name):

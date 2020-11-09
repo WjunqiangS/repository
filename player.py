@@ -1,13 +1,22 @@
-from PyQt5.QtWidgets import QApplication
-import sys
-import pygame
+from PyQt5.QtCore import *
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    pygame.init()
-    print("播放音乐1")
-    track = pygame.mixer.music.load('/Users/wangjunqiang/Downloads/Oh_Father.mp3')
+class PlayerThread(QThread):
+    end_signal = pyqtSignal()
 
-    pygame.mixer.music.play()
+    def __init__(self, file = None):
+        super(PlayerThread, self).__init__()
+        self.file = file
 
-    sys.exit(app.exec())
+    # 开始播放
+    def run(self):
+        return
+
+    # 播放下一首
+    def next(self, file):
+        return
+
+    # 播放前一首
+    def previous(self, file ):
+        return
+
+    # 停止播放
