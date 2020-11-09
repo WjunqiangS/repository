@@ -13,6 +13,7 @@ class TransformFunc(QWidget):
     """
     def __init__(self):
         super(TransformFunc, self).__init__()
+        self.voice_trans_thread = None
         self.__files = []
         self.__init_control()
 
@@ -62,6 +63,9 @@ class TransformFunc(QWidget):
 
     # 获取打开的文件
     def get_files(self, file):
+        # 如果发现语音转写线程被开启，则把后面加上文件状态改为正在转写状态
+        if self.voice_trans_thread :
+            file.transforming = True
         self.__files.append(file)
 
     # 语音转写完成之后退出线程
@@ -98,6 +102,7 @@ class TransformFunc(QWidget):
     def on_btn_save_clicked(self):
         self.cur_file.set_file_txt(self.__text.toPlainText())
 
+    # 导出语音转写内容
     def on_btn_export_clicked(self):
         flag = 0
         for file in self.__files:
@@ -117,9 +122,11 @@ class TransformFunc(QWidget):
         else:
             self.write2excel(file_path)
 
+    # 转写内容被修改之后打开保存修改内容按钮
     def on_text_changed(self):
         self.__btn_save.setEnabled(True)
 
+    # 把内容写为docx
     def write2doc(self, path):
         doc = Document()
         doc.styles['Normal'].font.name = u'宋体'
@@ -133,6 +140,7 @@ class TransformFunc(QWidget):
 
         doc.save(path)
 
+    # 把内容写为xlsx
     def write2excel(self, path):
         file_name =[]
         trans_content = []

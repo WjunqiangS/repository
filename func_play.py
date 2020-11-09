@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 from file import File
 import os
 
-class Player(QWidget):
+class PlayerGui(QWidget):
     """ 本类包含了打开文件、文件列表、还有声音播放的功能以及控制按钮
         __btn_open_files: 打开文件按钮
         __list_files: 文件列表
@@ -15,7 +15,7 @@ class Player(QWidget):
     select_file = pyqtSignal(str)
 
     def __init__(self):
-        super(Player, self).__init__()
+        super(PlayerGui, self).__init__()
         self.files = []
         self.__init_control()
 
@@ -34,12 +34,10 @@ class Player(QWidget):
         self.__back_btn = QPushButton(self)
         self.__play_btn = QPushButton(self)
         self.__forward_btn = QPushButton(self)
-        self.__volume_btn = QPushButton(self)
 
         self.__back_btn.setIcon(QIcon('./RES/back.png'))
         self.__play_btn.setIcon(QIcon('./RES/play.png'))
         self.__forward_btn.setIcon(QIcon('./RES/forward.png'))
-        self.__volume_btn.setIcon(QIcon('./RES/volume.png'))
 
         # 播放时间
         self.__time_label1 = QLabel("00:00", self)
@@ -53,12 +51,11 @@ class Player(QWidget):
 
         # 设置播放按钮的布局
         glayout.addWidget(self.__time_label1, 0, 0)
-        glayout.addWidget(self.__time_slider, 0, 1, 1, 6)
-        glayout.addWidget(self.__time_label2, 0, 7)
-        glayout.addWidget(self.__back_btn, 1, 0, 1, 2)
-        glayout.addWidget(self.__play_btn, 1, 2, 1, 2)
-        glayout.addWidget(self.__forward_btn, 1, 4, 1, 2)
-        glayout.addWidget(self.__volume_btn, 1, 6, 1, 2)
+        glayout.addWidget(self.__time_slider, 0, 1, 1, 9)
+        glayout.addWidget(self.__time_label2, 0, 10)
+        glayout.addWidget(self.__back_btn, 1, 1, 1, 3)
+        glayout.addWidget(self.__play_btn, 1, 4, 1, 3)
+        glayout.addWidget(self.__forward_btn, 1, 7, 1, 3)
         vlayout.addWidget(QLabel('语音播放区：'))
         vlayout.addWidget(self.__btn_open_files)
         vlayout.addWidget(self.__list_files)
