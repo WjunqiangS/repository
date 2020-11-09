@@ -23,7 +23,7 @@ class VoiceTransThread(QThread):
     def get_txt_data(self, file):
         ip = "speech.yuntrans.cn"
         port = 5002
-        taskid = send_file(file.full_path, ip, port).decode('utf-8')
+        taskid = send_file(file.file_path, ip, port).decode('utf-8')
         print(taskid)
         # taskid = '45972493eab64466861d9db77b4311b6'
         header = {'Content-Type': 'application/json'}
@@ -44,9 +44,9 @@ class VoiceTransThread(QThread):
                     file.finish_transform = True
                     break
                 elif json.loads(res.text)['task_status'] == "Running":
-                    print(f"{file.full_path}正在上传中...")
+                    print(f"{file.file_path}正在上传中...")
                 elif json.loads(res.text)['task_status'] == "Failure":
-                    print(f"{file.full_path}上传失败")
+                    print(f"{file.file_path}上传失败")
                     break
             except Exception as e:
                 print(e.__cause__)

@@ -16,10 +16,13 @@ class PlayerGui(QWidget):
 
     def __init__(self):
         super(PlayerGui, self).__init__()
-        self.files = []
         self.__init_control()
 
     def __init_control(self):
+        # 播放按钮状态
+        self.__btn_play_state = True
+        # 被选中的列表
+        self.files = []
         # 创建布局管理器，管理功能按键
         glayout = QGridLayout()
         vlayout = QVBoxLayout()
@@ -36,10 +39,10 @@ class PlayerGui(QWidget):
         self.__forward_btn = QPushButton(self)
         self.__stop_btn = QPushButton(self)
 
-        self.__back_btn.setIcon(QIcon('./RES/back.png'))
-        self.__play_btn.setIcon(QIcon('./RES/play.png'))
-        self.__forward_btn.setIcon(QIcon('./RES/forward.png'))
-        self.__stop_btn.setIcon(QIcon('./RES/stop.png'))
+        self.__back_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'back.png')))
+        self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
+        self.__forward_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'forward.png')))
+        self.__stop_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'stop.png')))
 
         # 播放时间
         self.__time_label1 = QLabel("00:00", self)
@@ -66,9 +69,16 @@ class PlayerGui(QWidget):
 
         self.setLayout(vlayout)
 
-        # 绑定按键和槽函数
+        # 连接打开文件列表按键的槽函数
         self.__btn_open_files.clicked.connect(self.on_btn_open_files_clicked)
-        self.__list_files.clicked.connect(self.on_list_files_cliked)
+        self.__list_files.clicked.connect(self.on_list_files_clicked)
+
+        # 连接播放按键的槽函数
+        self.__back_btn.pressed.connect(self.on_btn_back_pressed)
+        self.__play_btn.pressed.connect(self.on_btn_play_pressed)
+        self.__forward_btn.pressed.connect(self.on_btn_forward_pressed)
+        self.__stop_btn.pressed.connect(self.on_btn_stop_pressed)
+
         #设置菜单
         self.__list_files.setContextMenuPolicy(3)
         self.__list_files.customContextMenuRequested[QPoint].connect(self.list_fils_right_key_menu)
@@ -85,7 +95,7 @@ class PlayerGui(QWidget):
                     exist_flag = 1
                     break
             if not exist_flag:
-                file = File(os.path.basename(str), os.path.dirname(str))
+                file = File(str)
                 self.files.append(file)
                 # 打开文件之后给开始转写发送信号，表示已经拿到文件
                 self.files_signal.emit(file)
@@ -94,11 +104,29 @@ class PlayerGui(QWidget):
         slm.setStringList([file.file_name for file in self.files])
         self.__list_files.setModel(slm)
 
+    # 上一首按钮被点击
+    def on_btn_back_pressed(self):
+        return
+
+    # 播放按钮被点击
+    def on_btn_play_pressed(self):
+        return
+
+    # 下一首按钮被点击
+    def on_btn_forward_pressed(self):
+        return
+
+    # 停止按钮被点击
+    def on_btn_stop_pressed(self):
+        return
+
     # 文件列表点击的槽函数
-    def on_list_files_cliked(self, index):
+    def on_list_files_clicked(self, index):
         self.select_file.emit(self.files[index.row()].file_name)
 
+    # 文件列表右键功能，还未完成
     def list_fils_right_key_menu(self, point):
         menu = QMenu()
         menu.addAction('删除')
         menu.exec_(QCursor.pos())
+
