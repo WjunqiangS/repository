@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QStringListModel, pyqtSignal, QPoint
+from PyQt5.QtCore import QStringListModel, pyqtSignal, QPoint, QUrl, QTime
 from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import Qt
+from PyQt5.QtMultimedia import *
 from file import File
 import os
 
@@ -13,16 +14,21 @@ class PlayerGui(QWidget):
     """
     files_signal = pyqtSignal(File)
     select_file = pyqtSignal(str)
+    back_signal = pyqtSignal()
+    forward_signal = pyqtSignal()
 
     def __init__(self):
         super(PlayerGui, self).__init__()
+        self.__player = QMediaPlayer(self)
+        self.__play_list = QMediaPlaylist(self)
+        self.__player.setPlaylist(self.__play_list)
+        self.__play_list.setCurrentIndex(0)
         self.__init_control()
 
     def __init_control(self):
-        # 播放按钮状态
-        self.__btn_play_state = True
         # 被选中的列表
         self.files = []
+
         # 创建布局管理器，管理功能按键
         glayout = QGridLayout()
         vlayout = QVBoxLayout()
@@ -31,7 +37,6 @@ class PlayerGui(QWidget):
         self.__btn_open_files = QPushButton('打开文件')
         self.__list_files = QListView()
         self.__list_files.setEditTriggers(QAbstractItemView.NoEditTriggers)
-
 
         # 播放控制按钮
         self.__back_btn = QPushButton(self)
@@ -79,13 +84,18 @@ class PlayerGui(QWidget):
         self.__forward_btn.pressed.connect(self.on_btn_forward_pressed)
         self.__stop_btn.pressed.connect(self.on_btn_stop_pressed)
 
-        #设置菜单
+        # 连接播放器信号的槽函数
+        self.__player.positionChanged.connect(self.on_update_slider)
+        self.__player.durationChanged.connect(self.on_media_changed)
+        self.__player.stateChanged.connect(self.on_player_state_changed)
+
+        # 设置菜单
         self.__list_files.setContextMenuPolicy(3)
         self.__list_files.customContextMenuRequested[QPoint].connect(self.list_fils_right_key_menu)
 
     # 打开文件按钮的槽函数
     def on_btn_open_files_clicked(self):
-        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'Audio Files (*.[V|v]3);;Audio Files (*.wav);;')[0]
+        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'Audio Files (*.wav);;')[0]
 
         # 把打开的文件都保存到文件列表中
         for str in files_path:
@@ -97,28 +107,14 @@ class PlayerGui(QWidget):
             if not exist_flag:
                 file = File(str)
                 self.files.append(file)
+                # 把打开的文件预先存放到播放列表里面
+                self.__play_list.addMedia(QMediaContent(QUrl.fromLocalFile(file.file_path)))
                 # 打开文件之后给开始转写发送信号，表示已经拿到文件
                 self.files_signal.emit(file)
 
         slm = QStringListModel()
         slm.setStringList([file.file_name for file in self.files])
         self.__list_files.setModel(slm)
-
-    # 上一首按钮被点击
-    def on_btn_back_pressed(self):
-        return
-
-    # 播放按钮被点击
-    def on_btn_play_pressed(self):
-        return
-
-    # 下一首按钮被点击
-    def on_btn_forward_pressed(self):
-        return
-
-    # 停止按钮被点击
-    def on_btn_stop_pressed(self):
-        return
 
     # 文件列表点击的槽函数
     def on_list_files_clicked(self, index):
@@ -130,3 +126,87 @@ class PlayerGui(QWidget):
         menu.addAction('删除')
         menu.exec_(QCursor.pos())
 
+    # 播放按钮被点击
+    def on_btn_play_pressed(self):
+        if not self.__play_list.isEmpty():
+            if self.__player.mediaStatus() == QMediaPlayer.NoMedia:
+                self.play()
+            elif self.__player.state() == QMediaPlayer.StoppedState:
+                self.play()
+            elif self.__player.state() == QMediaPlayer.PlayingState:
+                self.pause()
+            elif self.__player.state() == QMediaPlayer.PausedState:
+                self.play()
+
+    # 上一首按钮被点击
+    def on_btn_back_pressed(self):
+        self.back()
+
+    # 下一首按钮被点击
+    def on_btn_forward_pressed(self):
+        self.forward()
+
+    # 停止按钮被点击
+    def on_btn_stop_pressed(self):
+        self.stop()
+
+    # 媒体文件状态改变时，更新进度条和时间标签
+    def on_media_changed(self, time):
+        duration = QTime(0, time / 60000, int(round((time % 60000) / 1000.0, 0)))
+        self.__time_label2.setText(duration.toString('mm:ss'))
+        self.__time_slider.setRange(0, time)
+
+    # 当时间变化时更改进度条时间
+    def on_update_slider(self, position):
+        duration = QTime(0, position / 60000, int(round((position % 60000) / 1000.0, 0)))
+        self.__time_label1.setText(duration.toString('mm:ss'))
+        self.__time_slider.setValue(position)
+
+    def on_player_state_changed(self, state):
+        if state == QMediaPlayer.PlayingState:
+            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'pause.png')))
+        elif state == QMediaPlayer.PausedState:
+            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
+        elif state == QMediaPlayer.StoppedState:
+            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
+            self.__time_slider.setValue(0)
+            self.__time_label1.setText('00:00')
+        # 重绘播放控件
+        self.__play_btn.repaint()
+        self.__time_slider.repaint()
+        self.__time_label1.repaint()
+
+    def play(self):
+        self.__player.play()
+
+    def stop(self):
+        self.__player.stop()
+
+    def pause(self):
+        self.__player.pause()
+
+    def back(self):
+        # 先停止当前曲目的播放
+        self.stop()
+
+        # 计算上一首曲目的偏移量
+        count = len(self.files)
+        cur_index = self.__play_list.currentIndex()
+        cur_index -= 1
+        self.__play_list.setCurrentIndex(cur_index % count)
+
+        # 播放下一首曲目
+        self.play()
+
+    def forward(self):
+        # 先停止当前曲目的播放
+        self.stop()
+
+        # 计算下一首曲目的偏移量
+        count = len(self.files)
+        cur_index = self.__play_list.currentIndex()
+        cur_index += 1
+        self.__play_list.setCurrentIndex(cur_index % count)
+
+        # 播放下一首曲目
+        self.play()
