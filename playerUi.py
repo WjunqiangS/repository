@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QStringListModel, pyqtSignal, QPoint, QUrl, QTime
-from PyQt5.QtGui import QIcon, QCursor
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QStringListModel, pyqtSignal, QPoint, QUrl, QTime, QModelIndex
+from PyQt5.QtGui import QIcon, QCursor, QMouseEvent
+from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtMultimedia import *
 from file import File
 import os
@@ -58,6 +58,7 @@ class PlayerGui(QWidget):
         # 播放进度条
         self.__time_slider = QSlider(Qt.Horizontal, self)
         self.__time_slider.setStyle(QStyleFactory.create('Fusion'))
+        self.__time_slider.installEventFilter(self)
 
         # 设置播放按钮的布局
         glayout.addWidget(self.__time_label1, 0, 0, 1, 1)
@@ -77,6 +78,7 @@ class PlayerGui(QWidget):
         # 连接打开文件列表按键的槽函数
         self.__btn_open_files.clicked.connect(self.on_btn_open_files_clicked)
         self.__list_files.clicked.connect(self.on_list_files_clicked)
+        self.__list_files.doubleClicked.connect(self.on_list_files_doubleclicked)
 
         # 连接播放按键的槽函数
         self.__back_btn.pressed.connect(self.on_btn_back_pressed)
@@ -115,10 +117,17 @@ class PlayerGui(QWidget):
         slm = QStringListModel()
         slm.setStringList([file.file_name for file in self.files])
         self.__list_files.setModel(slm)
+        self.__list_files.setCurrentIndex(slm.index(0))
 
-    # 文件列表点击的槽函数
+    # 文件列表单击的槽函数
     def on_list_files_clicked(self, index):
         self.select_file.emit(self.files[index.row()].file_name)
+
+    # 文件列表双击的槽函数
+    def on_list_files_doubleclicked(self, index):
+        self.stop()
+        self.__play_list.setCurrentIndex(index.row())
+        self.play()
 
     # 文件列表右键功能，还未完成
     def list_fils_right_key_menu(self, point):
@@ -176,6 +185,23 @@ class PlayerGui(QWidget):
         self.__time_slider.repaint()
         self.__time_label1.repaint()
 
+    def eventFilter(self, obj, event):
+        if obj == self.__time_slider and  (self.__player.state() == QMediaPlayer.PlayingState or
+        self.__player.state() == QMediaPlayer.PausedState):
+            if event.type() == QEvent.MouseButtonPress:
+                mouse_event = QMouseEvent(event)
+                if mouse_event.buttons() == Qt.LeftButton:
+                    range = self.__time_slider.maximum()
+                    width = self.__time_slider.width()
+
+                    pos = mouse_event.pos().x() / width * range
+                    self.__player.setPosition(pos)
+                    if self.__player.state() == QMediaPlayer.PausedState:
+                        self.play()
+
+        return QDialog.eventFilter(QDialog(), obj, event)
+
+    ####################### 播放器功能 ####################
     def play(self):
         self.__player.play()
 
