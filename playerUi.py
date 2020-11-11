@@ -35,7 +35,9 @@ class PlayerGui(QWidget):
 
         # 打开文件按钮
         self.__btn_open_files = QPushButton('打开文件')
+        self.__list_model = QStringListModel()
         self.__list_files = QListView()
+        self.__list_files.setModel(self.__list_model)
         self.__list_files.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         # 播放控制按钮
@@ -113,11 +115,9 @@ class PlayerGui(QWidget):
                 self.__play_list.addMedia(QMediaContent(QUrl.fromLocalFile(file.file_path)))
                 # 打开文件之后给开始转写发送信号，表示已经拿到文件
                 self.files_signal.emit(file)
-
-        slm = QStringListModel()
-        slm.setStringList([file.file_name for file in self.files])
-        self.__list_files.setModel(slm)
-        self.__list_files.setCurrentIndex(slm.index(0))
+                self.__list_model.insertRows(self.__list_model.rowCount(), 1)
+                index = self.__list_model.index(self.__list_model.rowCount() - 1)
+                self.__list_model.setData(index, file.file_name)
 
     # 文件列表单击的槽函数
     def on_list_files_clicked(self, index):
@@ -139,6 +139,7 @@ class PlayerGui(QWidget):
     def on_btn_play_pressed(self):
         if not self.__play_list.isEmpty():
             if self.__player.mediaStatus() == QMediaPlayer.NoMedia:
+                self.__list_files.setCurrentIndex(self.__list_model.index(0))
                 self.play()
             elif self.__player.state() == QMediaPlayer.StoppedState:
                 self.play()
@@ -150,10 +151,24 @@ class PlayerGui(QWidget):
     # 上一首按钮被点击
     def on_btn_back_pressed(self):
         self.back()
+        count = len(self.files)
+        if count == 0:
+            return
+        cur_index = self.__list_files.currentIndex()
+        cur_index = cur_index.row() - 1
+        self.__list_files.setCurrentIndex(self.__list_model.index(cur_index % count))
+        self.__list_files.repaint()
 
     # 下一首按钮被点击
     def on_btn_forward_pressed(self):
         self.forward()
+        count = len(self.files)
+        if count == 0:
+            return
+        cur_index = self.__list_files.currentIndex()
+        cur_index = cur_index.row() + 1
+        self.__list_files.setCurrentIndex(self.__list_model.index(cur_index % count))
+        self.__list_files.repaint()
 
     # 停止按钮被点击
     def on_btn_stop_pressed(self):
@@ -212,6 +227,8 @@ class PlayerGui(QWidget):
         self.__player.pause()
 
     def back(self):
+        if self.__play_list.isEmpty():
+            return
         # 先停止当前曲目的播放
         self.stop()
 
@@ -225,6 +242,8 @@ class PlayerGui(QWidget):
         self.play()
 
     def forward(self):
+        if self.__play_list.isEmpty():
+            return
         # 先停止当前曲目的播放
         self.stop()
 

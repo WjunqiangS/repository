@@ -101,7 +101,9 @@ class TransformGui(QWidget):
 
     # 保存修改的文本内容
     def on_btn_save_clicked(self):
-        self.cur_file.set_file_txt(self.__text.toPlainText())
+        ret = QMessageBox.information(self, '警告', '是否保存文件', QMessageBox.No|QMessageBox.Yes)
+        if ret == QMessageBox.Yes:
+            self.cur_file.set_file_txt(self.__text.toPlainText())
 
     # 导出语音转写内容
     def on_btn_export_clicked(self):
