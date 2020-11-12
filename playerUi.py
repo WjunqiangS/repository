@@ -4,6 +4,8 @@ from PyQt5.QtGui import QIcon, QCursor, QMouseEvent
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtMultimedia import *
 from file import File
+from alaw2pcm import alaw2pcm
+import re
 import os
 
 class PlayerGui(QWidget):
@@ -60,6 +62,7 @@ class PlayerGui(QWidget):
         # 播放进度条
         self.__time_slider = QSlider(Qt.Horizontal, self)
         self.__time_slider.setStyle(QStyleFactory.create('Fusion'))
+        self.__time_slider.setTracking(False)
         self.__time_slider.installEventFilter(self)
 
         # 设置播放按钮的布局
@@ -93,22 +96,34 @@ class PlayerGui(QWidget):
         self.__player.durationChanged.connect(self.on_media_changed)
         self.__player.stateChanged.connect(self.on_player_state_changed)
 
+        # 连接进度条拖动的槽函数
+        self.__time_slider.sliderMoved.connect(self.on_slider_moved)
+
         # 设置菜单
         self.__list_files.setContextMenuPolicy(3)
         self.__list_files.customContextMenuRequested[QPoint].connect(self.list_fils_right_key_menu)
 
     # 打开文件按钮的槽函数
     def on_btn_open_files_clicked(self):
-        files_path = QFileDialog.getOpenFileNames(self, '打开文件', os.getcwd(), 'Audio Files (*.wav);;')[0]
+        files_path, file_type = QFileDialog.getOpenFileNames(self, "打开文件", os.getcwd(),
+                                                             "V3文件 (*.V3);;wav文件 (*.wav);;", "V3文件 (*.V3)")
 
         # 把打开的文件都保存到文件列表中
         for str in files_path:
             exist_flag = 0
             for exit_file in self.files:
-                if os.path.basename(str) == exit_file.file_name:
+                if os.path.basename(str).split('.')[0] == exit_file.file_name.split('.')[0]:
                     exist_flag = 1
                     break
             if not exist_flag:
+                if re.match('.*\.V3', file_type) :
+                    with open(str, 'rb') as f:
+                        raw_data = f.read()
+                    str = os.path.join(os.path.dirname(str), os.path.basename(str).split('.')[0] + '.wav')
+                    wave_write = alaw2pcm(str, 1, 8000, 8)
+                    wave_write.write(raw_data)
+                    wave_write.close()
+
                 file = File(str)
                 self.files.append(file)
                 # 把打开的文件预先存放到播放列表里面
@@ -200,6 +215,10 @@ class PlayerGui(QWidget):
         self.__time_slider.repaint()
         self.__time_label1.repaint()
 
+    def on_slider_moved(self, value):
+        self.__player.setPosition(value)
+
+
     def eventFilter(self, obj, event):
         if obj == self.__time_slider and  (self.__player.state() == QMediaPlayer.PlayingState or
         self.__player.state() == QMediaPlayer.PausedState):
@@ -213,6 +232,8 @@ class PlayerGui(QWidget):
                     self.__player.setPosition(pos)
                     if self.__player.state() == QMediaPlayer.PausedState:
                         self.play()
+        elif obj == self.__time_slider:
+            self.__time_slider.setValue(0)
 
         return QDialog.eventFilter(QDialog(), obj, event)
 

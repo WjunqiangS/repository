@@ -121,24 +121,3 @@ class alaw2pcm:
     def close(self):
         self._file.close()
 
-
-
-if __name__ == '__main__':
-
-    with open('/Users/wangjunqiang/PycharmProjects/GUI_Project/RES/1726026.V3', 'rb') as f:
-        raw_data = f.read()
-    wave_write = alaw2pcm("/Users/wangjunqiang/PycharmProjects/GUI_Project/RES/1726026.wav", 1, 8000, 8)
-    wave_write.write(raw_data)
-    # close the file stream and save the file
-    wave_write.close()
-
-
-
-    # wave_read = WavRead("/home/lovemefan/disk1/lovemefan/语音数据集/录音测试/1726026.V3")
-    # wave_read2 = WavRead("/home/lovemefan/disk1/lovemefan/语音数据集/录音测试/1726026.wav")
-    # # print parameters like number of channels, sample rate, bits per sample, audio format etc
-    # # Audio format 1 = PCM (without compression)
-    # # Audio format 6 = PCMA (with A-law compression)
-    # # Audio format 7 = PCMU (with mu-law compression)
-    # print(wave_read.getparams())
-    # print(wave_read2.getparams())
