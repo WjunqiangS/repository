@@ -187,8 +187,16 @@ class Player(QWidget):
         # 播放下一首曲目
         self.__play()
 
-    def set_play_list(self, file_path):
-        self.__play_list.addMedia(QMediaContent(QUrl.fromLocalFile(file_path)))
+    ##### 和外部控件通信的借口 #####
+    # 打开文件时把打开的文件添加到文件列表中
+    def set_play_list(self, File):
+        self.__play_list.addMedia(QMediaContent(QUrl.fromLocalFile(File.file_path)))
+
+    # 播放双击中的文件
+    def play_clicked_file(self, index):
+        self.__stop()
+        self.__play_list.setCurrentIndex(index)
+        self.__play()
 
 
 if __name__ == "__main__":
@@ -212,7 +220,7 @@ if __name__ == "__main__":
 
             file = File(str)
             # 把打开的文件预先存放到播放列表里面
-            main_gui.set_play_list(file.file_path)
+            main_gui.set_play_list(file)
 
     main_gui.show()
     sys.exit(app.exec())
