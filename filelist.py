@@ -45,7 +45,6 @@ class FileList(QWidget):
     # 文件列表双击的槽函数
     def __on_list_files_doubleclicked(self, index):
         self.double_clicked_file.emit(index.row())
-        self.clicked_file.emit(index.row())
 
     # 文件列表右键功能，还未完成
     def __list_fils_right_key_menu(self, point):

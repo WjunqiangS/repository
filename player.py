@@ -7,6 +7,7 @@ import os
 
 class Player(QWidget):
     position_change = pyqtSignal(int)
+    media_changed = pyqtSignal(int)
     def __init__(self, parent = None):
         super(Player, self).__init__()
         self.__init_player()
@@ -21,6 +22,7 @@ class Player(QWidget):
 
         self.__player.positionChanged.connect(self.__on_update_slider)
         self.__player.durationChanged.connect(self.__on_media_changed)
+        self.__player.durationChanged.connect(self.__on_refresh_trans_idx)
         self.__player.stateChanged.connect(self.__on_player_state_changed)
 
         # 创建一个定时器，计时完成后发送当前播放的位置
@@ -208,3 +210,5 @@ class Player(QWidget):
     def send_postion2trans(self):
         self.position_change.emit(self.__player.position())
 
+    def __on_refresh_trans_idx(self):
+        self.media_changed.emit(self.__play_list.currentIndex())
