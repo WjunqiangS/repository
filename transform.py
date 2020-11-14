@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QLineEdit, QPushButton, QGridLayout, QMessageBox, QFileDialog, QLabel
+from PyQt5.QtGui import QTextCursor
 from voice_transform import VoiceTransThread
 from docx import Document
 from docx.oxml.ns import qn
@@ -11,6 +12,7 @@ class VoiceTans(QWidget):
     def __init__(self, parent = None):
         super(VoiceTans, self).__init__()
         self.__files = []
+        self.cur_idx = 0
         self.__init_layout()
         self.voice_trans_thread = None
         self.setParent(parent)
@@ -79,6 +81,34 @@ class VoiceTans(QWidget):
     def on_text_changed(self):
         self.__btn_save.setEnabled(True)
 
+    def on_playing_show(self, position):
+        def do_hilght_search(target):
+            text = self.__text.toPlainText()
+            index = text.find(target[:5])
+            if index > 0:
+                cursor = self.__text.textCursor()
+                cursor.setPosition(index)
+                cursor.setPosition(index + len(target), QTextCursor.KeepAnchor)
+                self.__text.setTextCursor(cursor)
+                self.__text.repaint()
+
+        if not self.__files:
+            return
+        if self.__files[self.cur_idx]:
+            slice_text = self.__files[self.cur_idx].voice_msg
+            if slice_text:
+                for dict in slice_text:
+                    if position >= dict['text_begin'] and position <= dict['text_end']:
+                        if self.__line_text.text() != dict['text']:
+                            self.__line_text.clear()
+                            self.__line_text.setText(dict['text'])
+                            self.__line_text.repaint()
+                            self.__btn_save.setEnabled(True)
+                            do_hilght_search(dict['text'])
+
+
+
+
     def get_open_files(self, file):
         # 如果发现语音转写线程被开启，则把后面加上文件状态改为正在转写状态
         if self.voice_trans_thread :
@@ -87,13 +117,14 @@ class VoiceTans(QWidget):
 
     # 点击文件列表的时候，显示选中文件的内容
     def show_file_txt(self, index):
+        self.cur_idx = index
         # 获取被选中的文件
-        self.cur_file = self.__files[index]
+        self.__files[index]
         self.__text.clear()
         # 如果文件完成转写，则显示转写的内容，如果还在转写，则显示正在转写中
-        if self.cur_file.finish_transform:
-            self.__text.appendPlainText(self.cur_file.get_file_txt())
-        elif self.cur_file.transforming:
+        if self.__files[index].finish_transform:
+            self.__text.appendPlainText(self.__files[index].get_file_txt())
+        elif self.__files[index].transforming:
             self.__text.appendPlainText('正在转写中...')
         self.__btn_save.setEnabled(False)
 

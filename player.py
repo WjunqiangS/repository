@@ -1,11 +1,12 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QSlider, QStyleFactory, QDialog
 from PyQt5.QtGui import QIcon, QMouseEvent
-from PyQt5.QtCore import Qt, QTime, QEvent, QUrl
+from PyQt5.QtCore import Qt, QTimer, QEvent, QUrl, pyqtSignal, QTime
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 import os
 
 
 class Player(QWidget):
+    position_change = pyqtSignal(int)
     def __init__(self, parent = None):
         super(Player, self).__init__()
         self.__init_player()
@@ -21,6 +22,11 @@ class Player(QWidget):
         self.__player.positionChanged.connect(self.__on_update_slider)
         self.__player.durationChanged.connect(self.__on_media_changed)
         self.__player.stateChanged.connect(self.__on_player_state_changed)
+
+        # 创建一个定时器，计时完成后发送当前播放的位置
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.send_postion2trans)
+
 
     def __control_layouy(self):
         glayout = QGridLayout()
@@ -66,6 +72,7 @@ class Player(QWidget):
 
         self.setLayout(glayout)
 
+        self.pre_position = 0
 
     # 播放按钮被点击
     def __on_btn_play_pressed(self):
@@ -142,12 +149,15 @@ class Player(QWidget):
 
 
     def __play(self):
+        self.timer.start(1000)
         self.__player.play()
 
     def __stop(self):
+        self.timer.stop()
         self.__player.stop()
 
     def __pause(self):
+        self.timer.stop()
         self.__player.pause()
 
     def __back(self):
@@ -191,4 +201,10 @@ class Player(QWidget):
         self.__stop()
         self.__play_list.setCurrentIndex(index)
         self.__play()
+
+    def get_postion(self):
+        return self.__player.position()
+
+    def send_postion2trans(self):
+        self.position_change.emit(self.__player.position())
 

@@ -14,15 +14,18 @@ class MainGui(QMainWindow):
 
     # 初始化控件的位置
     def __init_control(self):
-        glayout = QGridLayout()
 
         # 创建语音播放控件、播放列表和语音转写控件
-        self.player = Player()
-        self.player.resize(600, 200)
-
+        # 语音转写控件
         self.voice_trans = VoiceTans()
         self.voice_trans.resize(600, 400)
 
+        # 语音播放控件
+        self.player = Player()
+        self.player.resize(600, 200)
+        self.player.position_change.connect(self.voice_trans.on_playing_show)
+
+        # 文件列表控件
         self.file_list = FileList()
         self.file_list.resize(200, 400)
         self.file_list.open_files.connect(self.voice_trans.get_open_files)
@@ -38,14 +41,18 @@ class MainGui(QMainWindow):
         # 创建菜单栏
         self.init_menubar()
 
-        # 获取当前显示器的大小，并设置窗口的大小
-        desktop = QApplication.desktop()
-        rect_size = desktop.screenGeometry()
-        width = rect_size.width()
-        self.setMinimumWidth(width * 0.5)
+#        # 获取当前显示器的大小，并设置窗口的大小
+#        desktop = QApplication.desktop()
+#        rect_size = desktop.screenGeometry()
+#        width = rect_size.width()
+#        self.setMinimumWidth(width * 0.5)
 
+        # 网格布局管理器
+        glayout = QGridLayout()
         glayout.setColumnStretch(0, 1)
         glayout.setColumnStretch(1, 3)
+
+        #把控件添加到网格布局管理器中
         glayout.addWidget(self.file_list, 1, 0)
         glayout.addWidget(self.voice_trans, 1, 1)
         glayout.addWidget(self.trans_btn, 2, 0)

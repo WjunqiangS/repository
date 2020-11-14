@@ -16,3 +16,7 @@ class File():
     def get_file_txt(self):
         return self.file_txt
 
+    def get_slice_time(self):
+        for dict in self.voice_msg:
+            yield
+

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import *
+from PyQt5.QtCore import pyqtSignal, QThread
 from client import send_file
 import time
 import json
