@@ -4,19 +4,13 @@ from PyQt5.QtCore import Qt, QTime, QEvent, QUrl
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 import os
 
-# 测试
-from PyQt5.QtWidgets import QApplication, QFileDialog
-import sys
-import re
-from alaw2pcm import alaw2pcm
-from file import File
-
 
 class Player(QWidget):
-    def __init__(self):
+    def __init__(self, parent = None):
         super(Player, self).__init__()
         self.__init_player()
         self.__control_layouy()
+        self.setParent(parent)
 
     def __init_player(self):
         self.__player = QMediaPlayer(self)
@@ -198,29 +192,3 @@ class Player(QWidget):
         self.__play_list.setCurrentIndex(index)
         self.__play()
 
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-
-    main_gui = Player()
-
-    files_path, file_type = QFileDialog.getOpenFileNames(main_gui, "打开文件", os.getcwd(),
-                                                         "V3文件 (*.V3);;wav文件 (*.wav);;", "V3文件 (*.V3)")
-
-    # 把打开的文件都保存到文件列表中
-    for str in files_path:
-        exist_flag = 0
-        if re.match('.*\.V3', file_type):
-            with open(str, 'rb') as f:
-                raw_data = f.read()
-            str = os.path.join(os.path.dirname(str), os.path.basename(str).split('.')[0] + '.wav')
-            wave_write = alaw2pcm(str, 1, 8000, 8)
-            wave_write.write(raw_data)
-            wave_write.close()
-
-            file = File(str)
-            # 把打开的文件预先存放到播放列表里面
-            main_gui.set_play_list(file)
-
-    main_gui.show()
-    sys.exit(app.exec())

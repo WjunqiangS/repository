@@ -41,6 +41,11 @@ class VoiceTransThread(QThread):
                 if json.loads(res.text)['task_status'] == "Success":
                     # 得到结果
                     file.set_file_txt(json.loads(res.text)['result']['tasks_info'][0]['task_result']['result'][0])
+                    for i in json.loads(res.text)['result']['tasks_info'][0]['task_result']['detailed_result']:
+                        text = i['res'][0]
+                        text_begin = i['begin_time']
+                        text_end = i['end_time']
+                        file.voice_msg.append({'text':text, 'text_begin': text_begin, 'text_end': text_end})
                     file.finish_transform = True
                     break
                 elif json.loads(res.text)['task_status'] == "Running":
