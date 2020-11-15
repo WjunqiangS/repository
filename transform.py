@@ -38,10 +38,13 @@ class VoiceTans(QWidget):
 
         # 创建布局管理器管理控件
         gridlayout = QGridLayout(self)
+        gridlayout.setRowStretch(1, 6)
+        gridlayout.setRowStretch(3, 1)
         gridlayout.addWidget(QLabel("语音转写区:"), 0 , 0, 1, 2)
         gridlayout.addWidget(self.__text, 1, 0, 1, 2)
-        gridlayout.addWidget(self.__text_edit, 2, 0)
-        gridlayout.addWidget(self.__btn_save, 2, 1)
+        gridlayout.addWidget(QLabel('文本修改区:'), 2, 0)
+        gridlayout.addWidget(self.__text_edit, 3, 0)
+        gridlayout.addWidget(self.__btn_save, 3, 1)
 
         self.setLayout(gridlayout)
 

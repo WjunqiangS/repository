@@ -62,7 +62,7 @@ class MainGui(QMainWindow):
         # 网格布局管理器
         glayout = QGridLayout()
         glayout.setColumnStretch(0, 1)
-        glayout.setColumnStretch(1, 3)
+        glayout.setColumnStretch(1, 6)
 
         #把控件添加到网格布局管理器中
         glayout.addWidget(self.file_list, 1, 0)
