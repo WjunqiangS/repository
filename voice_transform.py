@@ -1,8 +1,10 @@
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QThread
-from client import send_file
 import time
 import json
 import requests
+from socket import socket, AF_INET, SOCK_STREAM
+import os
 
 
 class VoiceTransThread(QThread):
@@ -23,9 +25,7 @@ class VoiceTransThread(QThread):
     def get_txt_data(self, file):
         ip = "speech.yuntrans.cn"
         port = 5002
-        taskid = send_file(file.file_path, ip, port).decode('utf-8')
-        print(taskid)
-        # taskid = '45972493eab64466861d9db77b4311b6'
+        taskid = self.send_file(file.file_path, ip, port).decode('utf-8')
         header = {'Content-Type': 'application/json'}
         while True:
             url = f"http://speech.yuntrans.cn:5003/process?taskid={taskid}"
@@ -51,10 +51,64 @@ class VoiceTransThread(QThread):
                 elif json.loads(res.text)['task_status'] == "Running":
                     print(f"{file.file_path}正在上传中...")
                 elif json.loads(res.text)['task_status'] == "Failure":
-                    print(f"{file.file_path}上传失败")
+                    QMessageBox(QMessageBox.Warning, '警告', '上传失败').exec()
+                    self.trans_end.emit([])
+                    file.transforming = False
                     break
             except Exception as e:
-                print(e.__cause__)
+                QMessageBox(QMessageBox.Warning, '警告', '上传失败').exec()
+                self.trans_end.emit([])
+                file.transforming = False
             time.sleep(1)
         file.transforming = False
+
+    def send_file(self, file_name, ip, port):
+        """发送文件到服务器"""
+        start_time = time.time()
+
+        print(f"[*]正在连接{ip}:{port}")
+        clinet = socket(AF_INET, SOCK_STREAM)
+
+        try:
+            clinet.connect((ip, port))
+        except ConnectionRefusedError:
+            QMessageBox(QMessageBox.Warning, '警告', '连接不上服务器').exec()
+            self.trans_end.emit([])
+        except ConnectionRefusedError:
+            QMessageBox(QMessageBox.Warning, '警告', '连接不上服务器').exec()
+            self.trans_end.emit([])
+
+
+        file = open(file_name, 'rb')
+        while True:
+            # 接受套接字的大小
+            data = file.read(10*1024*1024)
+            clinet.sendall(os.path.basename(file_name).encode('utf-8'))
+            time.sleep(2)
+            if str(data) != "b''":
+                clinet.send(data)
+                # print(data)  # 此处打印注意被刷屏,仅测试用
+            else:
+                break
+        file.close()
+        # 发送成功指令
+        clinet.send('upload_finished'.encode())
+        # 发送 process 指令 查询进度
+        try:
+            commd = clinet.recv(1024)
+            print(commd.decode('utf-8'))
+            if commd == b"down_load_finished":
+                print("正在上传中...")
+                taskid = clinet.recv(1024)
+                print()
+                print(taskid.decode('utf-8'))
+            clinet.close()
+            print("[*]连接已关闭,等待重新连接")
+            end_time = time.time()
+            AlL_time = end_time - start_time
+            print(f"已经运行{round(AlL_time, 1)}s")
+        except Exception:
+            QMessageBox(QMessageBox.Warning, '警告', '接受数据出错').exec()
+            self.trans_end.emit([])
+        return taskid
 

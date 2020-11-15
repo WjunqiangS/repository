@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QLineEdit, QPushButton, QGridLayout, QMessageBox, QFileDialog, QLabel
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QPushButton, QGridLayout, QMessageBox, QFileDialog, QLabel
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QTextCursor
 from voice_transform import VoiceTransThread
@@ -26,8 +26,8 @@ class VoiceTans(QWidget):
         self.__text.setMinimumSize(600, 300)
 
         # 创建语音对应修改的文本框
-        self.__line_text = QLineEdit(self)
-        self.__line_text.setMinimumSize(500,30)
+        self.__text_edit = QTextEdit(self)
+        self.__text_edit.setMinimumSize(500,100)
 
         #创建保存修改按键
         self.__btn_save = QPushButton('保存修改内容', self)
@@ -38,7 +38,7 @@ class VoiceTans(QWidget):
         gridlayout = QGridLayout(self)
         gridlayout.addWidget(QLabel("语音转写区:"), 0 , 0, 1, 2)
         gridlayout.addWidget(self.__text, 1, 0, 1, 2)
-        gridlayout.addWidget(self.__line_text, 2, 0)
+        gridlayout.addWidget(self.__text_edit, 2, 0)
         gridlayout.addWidget(self.__btn_save, 2, 1)
 
         self.setLayout(gridlayout)
@@ -55,8 +55,12 @@ class VoiceTans(QWidget):
 
     # 保存按钮槽函数
     def on_btn_save_clicked(self):
+        if not self.__files:
+            QMessageBox.information(self, '警告', '请先打开文件')
+            return
         ret = QMessageBox.information(self, '警告', '是否保存文件', QMessageBox.No|QMessageBox.Yes)
         if ret == QMessageBox.Yes:
+
             self.__files[self.cur_show2text_idx].set_file_txt(self.__text.toPlainText())
 
     # 语音转写功能按钮槽函数
@@ -64,7 +68,6 @@ class VoiceTans(QWidget):
         if not self.__files:
             QMessageBox(QMessageBox.Warning, '警告', '请打开要转写的语音文件').exec()
         else:
-            self.playing_file_idx = index
             if self.exit_files2trasn() and (not self.voice_trans_thread):
                 self.transform_status.emit('文件转写中...')
                 self.voice_trans_thread = VoiceTransThread(self.__files)
@@ -75,13 +78,15 @@ class VoiceTans(QWidget):
 
     # 语音转写完成之后退出线程
     def voice_trans_end(self, files):
+        if not files:
+            self.voice_trans_thread.quit()
+            self.voice_trans_thread = None
         # 转写完成之后更新文件的信息
         self.__files = files
 
         # 设置各个控件的状态
         self.transform_status.emit('文件转写完成...')
-        self.__text.clear()
-        self.transform_status.emit(' ')
+        self.__text.appendPlainText(self.__files[0].get_file_txt())
 
         # 退出线程
         self.voice_trans_thread.quit()
@@ -106,10 +111,10 @@ class VoiceTans(QWidget):
                 for dict in slice_text:
                     if (position >= dict['text_begin']) and (position <= dict['text_end']):
                         do_hilght_search(dict['text'])
-                        if self.__line_text.text() != dict['text']:
-                            self.__line_text.clear()
-                            self.__line_text.setText(dict['text'])
-                            self.__line_text.repaint()
+                        if self.__text_edit.toPlainText() != dict['text']:
+                            self.__text_edit.clear()
+                            self.__text_edit.setText(dict['text'])
+                            self.__text_edit.repaint()
 
     def get_open_files(self, file):
         # 如果发现语音转写线程被开启，则把后面加上文件状态改为正在转写状态
@@ -131,6 +136,9 @@ class VoiceTans(QWidget):
             self.transform_status.emit('文件转写完成...')
         elif self.__files[index].transforming:
             self.transform_status.emit('文件转写中...')
+        else:
+            self.transform_status.emit('')
+
 
     # 转存语音文件按键点击槽函数
     def on_btn_export_clicked(self):

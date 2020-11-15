@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QPushButton, QGridLayout, QWidget, QAction, QMainWindow, QStatusBar
+from PyQt5.QtWidgets import QPushButton, QGridLayout, QWidget, QAction, QMainWindow, QStatusBar, QDialog
 from player import Player
 from filelist import FileList
 from transform import VoiceTans
+from login import Login
 
 
 class MainGui(QMainWindow):
@@ -19,22 +20,32 @@ class MainGui(QMainWindow):
         # 语音转写控件
         self.voice_trans = VoiceTans()
         self.voice_trans.resize(600, 400)
-        self.voice_trans.transform_status.connect(self.set_statusbar)
 
         # 语音播放控件
         self.player = Player()
         self.player.resize(600, 200)
-        self.player.position_change.connect(self.voice_trans.on_playing_show)
-        self.player.media_changed.connect(self.voice_trans.change_playing_idx)
 
         # 文件列表控件
         self.file_list = FileList()
         self.file_list.resize(200, 400)
+
+        # 绑定语音转写状态信号的槽函数
+        self.voice_trans.transform_status.connect(self.set_statusbar)
+
+        # 绑定播放器信号对应的槽函数
+        self.player.position_change.connect(self.voice_trans.on_playing_show)
+        self.player.media_changed.connect(self.voice_trans.change_playing_idx)
+        self.player.media_changed.connect(self.voice_trans.show_file_txt)
+        self.player.media_changed.connect(self.file_list.change_file_list_idx)
+
+        # 绑定文件列表中信号的槽函数
         self.file_list.open_files.connect(self.voice_trans.get_open_files)
         self.file_list.open_files.connect(self.player.set_play_list)
         self.file_list.double_clicked_file.connect(self.player.play_clicked_file)
         self.file_list.double_clicked_file.connect(self.voice_trans.on_btn_voice_trans_clicked)
         self.file_list.clicked_file.connect(self.voice_trans.show_file_txt)
+
+
 
         # 创建语音转写按钮
         self.trans_btn = QPushButton("文件转写")
@@ -47,12 +58,6 @@ class MainGui(QMainWindow):
         # 创建状态栏
         self.statusbar = QStatusBar()
         self.setStatusBar(self.statusbar)
-
-#        # 获取当前显示器的大小，并设置窗口的大小
-#        desktop = QApplication.desktop()
-#        rect_size = desktop.screenGeometry()
-#        width = rect_size.width()
-#        self.setMinimumWidth(width * 0.5)
 
         # 网格布局管理器
         glayout = QGridLayout()
@@ -73,6 +78,16 @@ class MainGui(QMainWindow):
     def init_menubar(self):
         # 创建总菜单栏
         menubar = self.menuBar()
+
+        # 创建用户登陆
+        login_menu = menubar.addMenu('登陆')
+        usr_login = QAction('用户登陆', self)
+        usr_manager_login = QAction('管理员登陆', self)
+        usr_login.triggered.connect(self.login_process)
+        usr_manager_login.triggered.connect(self.login_process)
+        login_menu.addAction(usr_login)
+        login_menu.addAction(usr_manager_login)
+
 
         # 创建文件菜单栏
         file_menu = menubar.addMenu('文件')
@@ -96,4 +111,8 @@ class MainGui(QMainWindow):
         self.statusbar.showMessage(str)
         self.statusbar.repaint()
 
-
+    def login_process(self):
+        dlg = Login()
+        if dlg.exec() == QDialog.Accepted:
+            print('用户名：' + dlg.get_usr_name())
+            print('密码：' + dlg.get_passwd())
