@@ -82,8 +82,12 @@ class FileList(QWidget):
                 index = self.__list_model.index(self.__list_model.rowCount() - 1)
                 # 给增加的行设置数据
                 self.__list_model.setData(index, file.file_name)
+#                self.__list_model.setData(index, file)
 
     def change_file_list_idx(self, index):
        model_index = self.__list_model.index(index)
        self.__list_files.setCurrentIndex(model_index)
        self.clicked_file.emit(index)
+
+    def set_file_status(self, str):
+        return

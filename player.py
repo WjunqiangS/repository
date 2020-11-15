@@ -8,6 +8,8 @@ import os
 class Player(QWidget):
     position_change = pyqtSignal(int)
     media_changed = pyqtSignal(int)
+    stop_status = pyqtSignal()
+
     def __init__(self, parent = None):
         super(Player, self).__init__()
         self.__init_player()
@@ -149,13 +151,13 @@ class Player(QWidget):
 
         return QDialog.eventFilter(QDialog(), obj, event)
 
-
     def __play(self):
         self.timer.start(1000)
         self.__player.play()
 
     def __stop(self):
         self.timer.stop()
+        self.stop_status.emit()
         self.__player.stop()
 
     def __pause(self):
@@ -176,7 +178,6 @@ class Player(QWidget):
 
         # 播放下一首曲目
         self.__play()
-
 
     def __forward(self):
         if self.__play_list.isEmpty():

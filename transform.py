@@ -110,6 +110,10 @@ class VoiceTans(QWidget):
         self.voice_trans_thread.quit()
         self.voice_trans_thread = None
 
+    def stop2show_playing_file(self):
+        self.__text.clear()
+        self.__text_edit.clear()
+
     def on_playing_show(self, position):
         def do_hilght_search(target):
             text = self.__text.toPlainText()

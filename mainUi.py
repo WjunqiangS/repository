@@ -31,12 +31,14 @@ class MainGui(QMainWindow):
 
         # 绑定语音转写状态信号的槽函数
         self.voice_trans.transform_status.connect(self.set_statusbar)
+        self.voice_trans.transform_status.connect(self.file_list.set_file_status)
 
         # 绑定播放器信号对应的槽函数
         self.player.position_change.connect(self.voice_trans.on_playing_show)
         self.player.media_changed.connect(self.voice_trans.change_playing_idx)
         self.player.media_changed.connect(self.voice_trans.show_file_txt)
         self.player.media_changed.connect(self.file_list.change_file_list_idx)
+        self.player.stop_status.connect(self.voice_trans.stop2show_playing_file)
 
         # 绑定文件列表中信号的槽函数
         self.file_list.open_files.connect(self.voice_trans.get_open_files)
@@ -45,12 +47,13 @@ class MainGui(QMainWindow):
         self.file_list.double_clicked_file.connect(self.voice_trans.on_btn_voice_trans_clicked)
         self.file_list.clicked_file.connect(self.voice_trans.show_file_txt)
 
-
-
         # 创建语音转写按钮
         self.trans_btn = QPushButton("文件转写")
-        self.trans_btn.resize(200, 50)
         self.trans_btn.clicked.connect(self.voice_trans.on_btn_voice_trans_clicked)
+
+        # 创建转存文件按钮
+        self.save_trans_btn = QPushButton("转写存储")
+        self.save_trans_btn.clicked.connect(self.voice_trans.on_btn_export_clicked)
 
         # 创建菜单栏
         self.init_menubar()
@@ -68,7 +71,8 @@ class MainGui(QMainWindow):
         glayout.addWidget(self.file_list, 1, 0)
         glayout.addWidget(self.voice_trans, 1, 1)
         glayout.addWidget(self.trans_btn, 2, 0)
-        glayout.addWidget(self.player, 2, 1)
+        glayout.addWidget(self.save_trans_btn, 3, 0)
+        glayout.addWidget(self.player, 2, 1, 2, -1)
 
         #设置中央控件
         central_widget = QWidget()
@@ -94,17 +98,17 @@ class MainGui(QMainWindow):
         # 添加文件菜单栏的选项
         open_file = QAction('打开文件', self)
         open_file.triggered.connect(self.file_list.add_files2list)
+        file_export = QAction('导出转写内容', self)
+        file_export.triggered.connect(self.voice_trans.on_btn_export_clicked)
         file_menu.addAction(open_file)
+        file_menu.addAction(file_export)
 
         # 创建功能菜单栏
         function_menu = menubar.addMenu('功能')
         # 添加文件菜单栏的选项
         file_trans = QAction('文件转写', self)
         file_trans.triggered.connect(self.voice_trans.on_btn_voice_trans_clicked)
-        file_export = QAction('导出转写内容', self)
-        file_export.triggered.connect(self.voice_trans.on_btn_export_clicked)
         function_menu.addAction(file_trans)
-        function_menu.addAction(file_export)
 
 
     def set_statusbar(self, str):
