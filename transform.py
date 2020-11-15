@@ -15,6 +15,7 @@ class VoiceTans(QWidget):
         super(VoiceTans, self).__init__()
         self.__files = []
         self.cur_show2text_idx = 0
+        self.cur_playing_postion = 0
         self.playing_file_idx = None
         self.__init_layout()
         self.voice_trans_thread = None
@@ -23,6 +24,7 @@ class VoiceTans(QWidget):
     def __init_layout(self):
         # 创建文本区
         self.__text = QPlainTextEdit(self)
+        self.__text.setReadOnly(True)
         self.__text.setMinimumSize(600, 300)
 
         # 创建语音对应修改的文本框
@@ -51,6 +53,8 @@ class VoiceTans(QWidget):
         return False
 
     def change_playing_idx(self, index):
+        self.__text_edit.clear()
+        self.__text.clear()
         self.playing_file_idx = index
 
     # 保存按钮槽函数
@@ -60,8 +64,18 @@ class VoiceTans(QWidget):
             return
         ret = QMessageBox.information(self, '警告', '是否保存文件', QMessageBox.No|QMessageBox.Yes)
         if ret == QMessageBox.Yes:
+            tmp_str = ''
+            for slice_txt in self.__files[self.cur_show2text_idx].voice_msg:
+                if not self.cur_playing_postion:
+                   return
+                if (self.cur_playing_postion >= slice_txt['text_begin']) and\
+                   (self.cur_playing_postion <= slice_txt['text_end']):
+                    slice_txt['text'] = self.__text_edit.toPlainText()
+                tmp_str += slice_txt['text']
 
-            self.__files[self.cur_show2text_idx].set_file_txt(self.__text.toPlainText())
+            self.__files[self.cur_show2text_idx].set_file_txt(tmp_str)
+            self.__text.clear()
+            self.__text.appendPlainText(self.__files[self.cur_show2text_idx].get_file_txt())
 
     # 语音转写功能按钮槽函数
     def on_btn_voice_trans_clicked(self, index):
@@ -81,6 +95,7 @@ class VoiceTans(QWidget):
         if not files:
             self.voice_trans_thread.quit()
             self.voice_trans_thread = None
+            return
         # 转写完成之后更新文件的信息
         self.__files = files
 
@@ -108,6 +123,7 @@ class VoiceTans(QWidget):
         if self.__files[self.playing_file_idx]:
             slice_text = self.__files[self.playing_file_idx].voice_msg
             if slice_text:
+                self.cur_playing_postion = position
                 for dict in slice_text:
                     if (position >= dict['text_begin']) and (position <= dict['text_end']):
                         do_hilght_search(dict['text'])
