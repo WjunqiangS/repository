@@ -4,6 +4,7 @@ from PyQt5.QtGui import QTextCursor
 from voice_transform import VoiceTransThread
 from docx import Document
 from docx.oxml.ns import qn
+from file import File
 from pandas import DataFrame
 import os
 import re
@@ -89,22 +90,23 @@ class VoiceTans(QWidget):
                 self.voice_trans_thread = VoiceTransThread(self.__files)
                 self.voice_trans_thread.trans_end.connect(self.voice_trans_end)
                 for file in self.__files:
+                    if file.file_status == 'Success':
+                        continue
                     file.file_status = 'Running'
                 self.transform_status.emit(self.__files)
                 self.voice_trans_thread.start()
 
     # 语音转写完成之后退出线程
-    def voice_trans_end(self, files):
-        if not files:
-            self.voice_trans_thread.quit()
-            self.voice_trans_thread = None
-            return
-        # 转写完成之后更新文件的信息
-        self.__files = files
+    def voice_trans_end(self, thread_back):
+        if isinstance(thread_back[0], str):
+            QMessageBox(QMessageBox.Warning, '警告', ''.join(thread_back)).exec()
+        elif isinstance(thread_back[0], File):
+            # 转写完成之后更新文件的信息
+            self.__files = thread_back
 
-        # 设置各个控件的状态
-        self.transform_status.emit(self.__files)
-        self.__text.appendPlainText(self.__files[0].get_file_txt())
+            # 设置各个控件的状态
+            self.transform_status.emit(self.__files)
+            self.__text.appendPlainText(self.__files[0].get_file_txt())
 
         # 退出线程
         self.voice_trans_thread.quit()

@@ -18,7 +18,11 @@ class VoiceTransThread(QThread):
             if file.file_status == 'Success':
                 continue
             else:
-                self.get_txt_data(file)
+                ret = self.get_txt_data(file)
+
+            if isinstance(ret, str):
+                self.trans_end.emit(list(ret))
+                return
 
         # 转写完成之后发出停止信号，并且把转写好的文件发送
         self.trans_end.emit(self.files)
@@ -26,7 +30,7 @@ class VoiceTransThread(QThread):
     def get_txt_data(self, file):
         ip = "speech.yuntrans.cn"
         port = 5002
-        taskid = self.send_file(file.file_path, ip, port).decode('utf-8')
+        taskid = self.send_file(file.file_path, ip, port)
         header = {'Content-Type': 'application/json'}
         while True:
             url = f"http://speech.yuntrans.cn:5003/process?taskid={taskid}"
@@ -53,10 +57,9 @@ class VoiceTransThread(QThread):
                     file.file_status = json.loads(res.text)['task_status']
                 elif json.loads(res.text)['task_status'] == "Failure":
                     file.file_status = json.loads(res.text)['task_status']
-                    self.trans_end.emit([])
                     break
-            except Exception as e:
-                self.trans_end.emit([])
+            except Exception:
+                return 'json load error'
             time.sleep(1)
 
     def send_file(self, file_name, ip, port):
@@ -69,7 +72,7 @@ class VoiceTransThread(QThread):
         try:
             clinet.connect((ip, port))
         except Exception:
-            self.trans_end.emit([])
+            return 'connection error'
 
 
         file = open(file_name, 'rb')
@@ -100,7 +103,7 @@ class VoiceTransThread(QThread):
             end_time = time.time()
             AlL_time = end_time - start_time
             print(f"已经运行{round(AlL_time, 1)}s")
-            return taskid
+            return taskid.decode('utf-8')
         except Exception:
-            self.trans_end.emit([])
+            return 'send file recv error'
 
