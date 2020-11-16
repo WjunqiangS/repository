@@ -2,7 +2,6 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QSlider, 
 from PyQt5.QtGui import QIcon, QMouseEvent
 from PyQt5.QtCore import Qt, QTimer, QEvent, QUrl, pyqtSignal, QTime
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
-import os
 
 
 class Player(QWidget):
@@ -135,6 +134,23 @@ class Player(QWidget):
     def __on_slider_moved(self, value):
         self.__player.setPosition(value)
 
+    def keyPressEvent(self, key_event):
+        if self.__play_list.isEmpty() and (self.__player.state() != QMediaPlayer.PlayingState or
+                                           self.__player.state() != QMediaPlayer.PausedState):
+            return
+        if self.__player.state() == QMediaPlayer.StoppedState:
+            return
+
+        if key_event.key() == Qt.Key_Left:
+            self.__player.setPosition(self.__player.position() - 1000)
+        elif key_event.key() == Qt.Key_Right:
+            self.__player.setPosition(self.__player.position() + 1000)
+        elif key_event.key() == Qt.Key_Space:
+            if self.__player.state() == QMediaPlayer.PausedState:
+                self.__play()
+            elif self.__player.state() == QMediaPlayer.PlayingState:
+                self.__pause()
+
     # 过滤获取进度条的点击事件
     def eventFilter(self, obj, event):
         if obj == self.__time_slider and (self.__player.state() == QMediaPlayer.PlayingState or
@@ -155,7 +171,7 @@ class Player(QWidget):
         return QDialog.eventFilter(QDialog(), obj, event)
 
     def __play(self):
-        self.timer.start(1000)
+        self.timer.start(500)
         self.__player.play()
 
     def __stop(self):
@@ -210,6 +226,11 @@ class Player(QWidget):
 
     def get_postion(self):
         return self.__player.position()
+
+
+    def set_position(self, position):
+        if not self.__play_list.isEmpty():
+            self.__player.setPosition(position)
 
     def send_postion2trans(self):
         self.position_change.emit(self.__player.position())

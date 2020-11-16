@@ -5,8 +5,7 @@ class File():
     def __init__(self, file_path = None):
         self.file_name = os.path.basename(file_path)
         self.file_path = file_path
-        self.finish_transform = False
-        self.transforming = False
+        self.file_status = ''
         self.file_txt = ''
         self.voice_msg = []
 

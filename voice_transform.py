@@ -16,8 +16,12 @@ class VoiceTransThread(QThread):
 
     def run(self):
         for file in self.files:
-            if not file.finish_transform:
-                self.get_txt_data(file)
+            if file.file_status != 'Running':
+                if file.file_status == 'Success':
+                    continue
+                else:
+                    file.file_status = 'Running'
+                    self.get_txt_data(file)
 
         # 转写完成之后发出停止信号，并且把转写好的文件发送
         self.trans_end.emit(self.files)
@@ -46,21 +50,19 @@ class VoiceTransThread(QThread):
                         text_begin = i['begin_time']
                         text_end = i['end_time']
                         file.voice_msg.append({'text':text, 'text_begin': text_begin, 'text_end': text_end})
-                    file.finish_transform = True
+                    file.file_status = json.loads(res.text)['task_status']
                     break
                 elif json.loads(res.text)['task_status'] == "Running":
-                    print(f"{file.file_path}正在上传中...")
+                    file.file_status = json.loads(res.text)['task_status']
                 elif json.loads(res.text)['task_status'] == "Failure":
+                    file.file_status = json.loads(res.text)['task_status']
                     QMessageBox(QMessageBox.Warning, '警告', '上传失败').exec()
                     self.trans_end.emit([])
-                    file.transforming = False
                     break
             except Exception as e:
                 QMessageBox(QMessageBox.Warning, '警告', '上传失败').exec()
                 self.trans_end.emit([])
-                file.transforming = False
             time.sleep(1)
-        file.transforming = False
 
     def send_file(self, file_name, ip, port):
         """发送文件到服务器"""
@@ -68,6 +70,7 @@ class VoiceTransThread(QThread):
 
         print(f"[*]正在连接{ip}:{port}")
         clinet = socket(AF_INET, SOCK_STREAM)
+        clinet.settimeout(10)
 
         try:
             clinet.connect((ip, port))
@@ -107,8 +110,8 @@ class VoiceTransThread(QThread):
             end_time = time.time()
             AlL_time = end_time - start_time
             print(f"已经运行{round(AlL_time, 1)}s")
+            return taskid
         except Exception:
             QMessageBox(QMessageBox.Warning, '警告', '接受数据出错').exec()
             self.trans_end.emit([])
-        return taskid
 

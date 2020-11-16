@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QPushButton, QGridLayout, QWidget, QAction, QMainWindow, QStatusBar, QDialog
+from PyQt5.QtCore import QEvent
 from player import Player
 from filelist import FileList
 from transform import VoiceTans
@@ -18,15 +19,18 @@ class MainGui(QMainWindow):
 
         # 创建语音播放控件、播放列表和语音转写控件
         # 语音转写控件
-        self.voice_trans = VoiceTans()
+        self.voice_trans = VoiceTans(self)
         self.voice_trans.resize(600, 400)
 
         # 语音播放控件
-        self.player = Player()
+        self.player = Player(self)
         self.player.resize(600, 200)
 
+        # 播放器安装安装事件过滤器
+        self.player.installEventFilter(self)
+
         # 文件列表控件
-        self.file_list = FileList()
+        self.file_list = FileList(self)
         self.file_list.resize(200, 400)
 
         # 绑定语音转写状态信号的槽函数
@@ -36,8 +40,8 @@ class MainGui(QMainWindow):
         # 绑定播放器信号对应的槽函数
         self.player.position_change.connect(self.voice_trans.on_playing_show)
         self.player.media_changed.connect(self.voice_trans.change_playing_idx)
-        self.player.media_changed.connect(self.voice_trans.show_file_txt)
         self.player.media_changed.connect(self.file_list.change_file_list_idx)
+        self.player.media_changed.connect(self.voice_trans.show_file_txt)
         self.player.stop_status.connect(self.voice_trans.stop2show_playing_file)
 
         # 绑定文件列表中信号的槽函数
@@ -45,6 +49,7 @@ class MainGui(QMainWindow):
         self.file_list.open_files.connect(self.player.set_play_list)
         self.file_list.double_clicked_file.connect(self.player.play_clicked_file)
         self.file_list.double_clicked_file.connect(self.voice_trans.on_btn_voice_trans_clicked)
+        self.file_list.double_clicked_file.connect(self.voice_trans.show_file_txt)
         self.file_list.clicked_file.connect(self.voice_trans.show_file_txt)
 
         # 创建语音转写按钮
@@ -78,6 +83,7 @@ class MainGui(QMainWindow):
         central_widget = QWidget()
         central_widget.setLayout(glayout)
         self.setCentralWidget(central_widget)
+
 
     def init_menubar(self):
         # 创建总菜单栏
@@ -120,3 +126,14 @@ class MainGui(QMainWindow):
         if dlg.exec() == QDialog.Accepted:
             print('用户名：' + dlg.get_usr_name())
             print('密码：' + dlg.get_passwd())
+
+    # 当点击除了控件的其他位置的时候，设置播放器为焦点
+    def mouseReleaseEvent(self, mouse_event):
+        self.player.setFocus()
+
+    # 当播放器被点击时，设置为当前焦点
+    def eventFilter(self, obj, event):
+        if obj == self.player and event.type() == QEvent.MouseButtonPress:
+            self.player.setFocus()
+
+        return QDialog.eventFilter(QDialog(), obj, event)

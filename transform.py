@@ -51,7 +51,7 @@ class VoiceTans(QWidget):
     # 是否存在没转写的文件
     def exit_files2trasn(self):
         for file in self.__files:
-            if not file.finish_transform:
+            if not file.file_status == 'Success':
                 return True
         return False
 
@@ -89,8 +89,6 @@ class VoiceTans(QWidget):
                 self.transform_status.emit('文件转写中...')
                 self.voice_trans_thread = VoiceTransThread(self.__files)
                 self.voice_trans_thread.trans_end.connect(self.voice_trans_end)
-                for file in self.__files:
-                    file.transforming = True
                 self.voice_trans_thread.start()
 
     # 语音转写完成之后退出线程
@@ -142,7 +140,6 @@ class VoiceTans(QWidget):
     def get_open_files(self, file):
         # 如果发现语音转写线程被开启，则把后面加上文件状态改为正在转写状态
         if self.voice_trans_thread:
-            file.transforming = True
             self.transform_status.emit('文件转写中...')
         self.__files.append(file)
 
@@ -153,21 +150,17 @@ class VoiceTans(QWidget):
         self.__files[index]
         self.__text.clear()
         # 如果文件完成转写，则显示转写的内容，如果还在转写，则显示正在转写中
-        if self.__files[index].finish_transform:
+        if self.__files[index].file_status == 'Success':
             self.__text.appendPlainText(self.__files[index].get_file_txt())
             self.__text.repaint()
-            self.transform_status.emit('文件转写完成...')
-        elif self.__files[index].transforming:
+        elif self.__files[index].file_status == 'Running':
             self.transform_status.emit('文件转写中...')
-        else:
-            self.transform_status.emit('')
-
 
     # 转存语音文件按键点击槽函数
     def on_btn_export_clicked(self):
         flag = 0
         for file in self.__files:
-            if file.finish_transform:
+            if file.file_status == 'Success':
                 flag = 1
                 break
         if (not self.__files) or (not flag):
@@ -190,7 +183,7 @@ class VoiceTans(QWidget):
         doc.styles['Normal']._element.rPr.rFonts.set(qn('w:eastAsia'), u'宋体')
 
         for file in self.__files:
-            if file.finish_transform:
+            if file.file_status == 'Success':
                 doc.add_paragraph(file.file_name)
                 doc.add_paragraph(file.get_file_txt())
                 doc.add_paragraph('\n')
@@ -202,7 +195,7 @@ class VoiceTans(QWidget):
         file_name =[]
         trans_content = []
         for file in self.__files:
-            if file.finish_transform:
+            if file.file_status == 'Success':
                 file_name.append(file.file_name)
                 trans_content.append(file.get_file_txt())
 
