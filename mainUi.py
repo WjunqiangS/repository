@@ -120,6 +120,7 @@ class MainGui(QMainWindow):
     def set_statusbar(self, files):
         for file in files:
             if file.file_status != 'Success':
+                self.statusbar.showMessage('文件正在转写中...')
                 return
 
         self.statusbar.showMessage('文件转写完成...')

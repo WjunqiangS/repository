@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit, QPushButton, QGridLayout, QMessageBox, QFileDialog, QLabel
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QTimer
 from PyQt5.QtGui import QTextCursor
 from voice_transform import VoiceTransThread
 from docx import Document
@@ -20,6 +20,8 @@ class VoiceTans(QWidget):
         self.playing_file_idx = None
         self.__init_layout()
         self.voice_trans_thread = None
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.updata_file_list_status)
         self.setParent(parent)
 
     def __init_layout(self):
@@ -93,7 +95,7 @@ class VoiceTans(QWidget):
                     if file.file_status == 'Success':
                         continue
                     file.file_status = 'Running'
-                self.transform_status.emit(self.__files)
+                self.timer.start(200)
                 self.voice_trans_thread.start()
 
     # 语音转写完成之后退出线程
@@ -105,12 +107,16 @@ class VoiceTans(QWidget):
             self.__files = thread_back
 
             # 设置各个控件的状态
-            self.transform_status.emit(self.__files)
             self.__text.appendPlainText(self.__files[0].get_file_txt())
 
         # 退出线程
         self.voice_trans_thread.quit()
+        self.transform_status.emit(self.__files)
+        self.timer.stop()
         self.voice_trans_thread = None
+
+    def updata_file_list_status(self):
+        self.transform_status.emit(self.__files)
 
     def stop2show_playing_file(self):
         self.__text.clear()
@@ -146,7 +152,6 @@ class VoiceTans(QWidget):
         if self.voice_trans_thread:
             file.file_status = 'Running'
         self.__files.append(file)
-        self.transform_status.emit(self.__files)
 
     # 点击文件列表的时候，显示选中文件的内容
     def show_file_txt(self, index):
@@ -158,8 +163,6 @@ class VoiceTans(QWidget):
         if self.__files[index].file_status == 'Success':
             self.__text.appendPlainText(self.__files[index].get_file_txt())
             self.__text.repaint()
-        elif self.__files[index].file_status == 'Running':
-            self.transform_status.emit(self.__files)
 
     # 转存语音文件按键点击槽函数
     def on_btn_export_clicked(self):
