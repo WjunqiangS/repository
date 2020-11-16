@@ -1,4 +1,3 @@
-from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import pyqtSignal, QThread
 import time
 import json
@@ -16,12 +15,10 @@ class VoiceTransThread(QThread):
 
     def run(self):
         for file in self.files:
-            if file.file_status != 'Running':
-                if file.file_status == 'Success':
-                    continue
-                else:
-                    file.file_status = 'Running'
-                    self.get_txt_data(file)
+            if file.file_status == 'Success':
+                continue
+            else:
+                self.get_txt_data(file)
 
         # 转写完成之后发出停止信号，并且把转写好的文件发送
         self.trans_end.emit(self.files)
@@ -56,11 +53,9 @@ class VoiceTransThread(QThread):
                     file.file_status = json.loads(res.text)['task_status']
                 elif json.loads(res.text)['task_status'] == "Failure":
                     file.file_status = json.loads(res.text)['task_status']
-                    QMessageBox(QMessageBox.Warning, '警告', '上传失败').exec()
                     self.trans_end.emit([])
                     break
             except Exception as e:
-                QMessageBox(QMessageBox.Warning, '警告', '上传失败').exec()
                 self.trans_end.emit([])
             time.sleep(1)
 
@@ -70,15 +65,10 @@ class VoiceTransThread(QThread):
 
         print(f"[*]正在连接{ip}:{port}")
         clinet = socket(AF_INET, SOCK_STREAM)
-        clinet.settimeout(10)
 
         try:
             clinet.connect((ip, port))
-        except ConnectionRefusedError:
-            QMessageBox(QMessageBox.Warning, '警告', '连接不上服务器').exec()
-            self.trans_end.emit([])
-        except ConnectionRefusedError:
-            QMessageBox(QMessageBox.Warning, '警告', '连接不上服务器').exec()
+        except Exception:
             self.trans_end.emit([])
 
 
@@ -112,6 +102,5 @@ class VoiceTransThread(QThread):
             print(f"已经运行{round(AlL_time, 1)}s")
             return taskid
         except Exception:
-            QMessageBox(QMessageBox.Warning, '警告', '接受数据出错').exec()
             self.trans_end.emit([])
 

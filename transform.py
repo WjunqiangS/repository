@@ -10,7 +10,7 @@ import re
 
 
 class VoiceTans(QWidget):
-    transform_status = pyqtSignal(str)
+    transform_status = pyqtSignal(list)
     def __init__(self, parent = None):
         super(VoiceTans, self).__init__()
         self.__files = []
@@ -86,9 +86,11 @@ class VoiceTans(QWidget):
             QMessageBox(QMessageBox.Warning, '警告', '请打开要转写的语音文件').exec()
         else:
             if self.exit_files2trasn() and (not self.voice_trans_thread):
-                self.transform_status.emit('文件转写中...')
                 self.voice_trans_thread = VoiceTransThread(self.__files)
                 self.voice_trans_thread.trans_end.connect(self.voice_trans_end)
+                for file in self.__files:
+                    file.file_status = 'Running'
+                self.transform_status.emit(self.__files)
                 self.voice_trans_thread.start()
 
     # 语音转写完成之后退出线程
@@ -101,7 +103,7 @@ class VoiceTans(QWidget):
         self.__files = files
 
         # 设置各个控件的状态
-        self.transform_status.emit('文件转写完成...')
+        self.transform_status.emit(self.__files)
         self.__text.appendPlainText(self.__files[0].get_file_txt())
 
         # 退出线程
@@ -140,8 +142,9 @@ class VoiceTans(QWidget):
     def get_open_files(self, file):
         # 如果发现语音转写线程被开启，则把后面加上文件状态改为正在转写状态
         if self.voice_trans_thread:
-            self.transform_status.emit('文件转写中...')
+            file.file_status = 'Running'
         self.__files.append(file)
+        self.transform_status.emit(self.__files)
 
     # 点击文件列表的时候，显示选中文件的内容
     def show_file_txt(self, index):
@@ -154,7 +157,7 @@ class VoiceTans(QWidget):
             self.__text.appendPlainText(self.__files[index].get_file_txt())
             self.__text.repaint()
         elif self.__files[index].file_status == 'Running':
-            self.transform_status.emit('文件转写中...')
+            self.transform_status.emit(self.__files)
 
     # 转存语音文件按键点击槽函数
     def on_btn_export_clicked(self):

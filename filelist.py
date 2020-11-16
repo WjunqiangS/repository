@@ -89,5 +89,15 @@ class FileList(QWidget):
        self.__list_files.setCurrentIndex(model_index)
        self.clicked_file.emit(index)
 
-    def set_file_status(self, str):
-        return
+    def set_file_status(self, files):
+        cur_index = 0
+        for file in files:
+            index = self.__list_model.index(cur_index)
+            if file.file_status == 'Success':
+                self.__list_model.setData(index, file.file_name + '  文件转写成功')
+            elif file.file_status == 'Running':
+                self.__list_model.setData(index, file.file_name + '  文件转写中...')
+            else:
+                self.__list_model.setData(index, file.file_name + '')
+            cur_index += 1
+

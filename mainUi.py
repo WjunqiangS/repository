@@ -117,8 +117,12 @@ class MainGui(QMainWindow):
         function_menu.addAction(file_trans)
 
 
-    def set_statusbar(self, str):
-        self.statusbar.showMessage(str)
+    def set_statusbar(self, files):
+        for file in files:
+            if file.file_status != 'Success':
+                return
+
+        self.statusbar.showMessage('文件转写完成...')
         self.statusbar.repaint()
 
     def login_process(self):
