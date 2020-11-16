@@ -35,21 +35,21 @@ class Player(QWidget):
     def __control_layouy(self):
         glayout = QGridLayout()
         # 播放控制按钮初始化
-        self.__back_btn = QPushButton(self)
-        self.__back_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'back.png')))
+        self.__back_btn = QPushButton("上一首", self)
+#        self.__back_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'back.png')))
         self.__back_btn.pressed.connect(self.__on_btn_back_pressed)
 
-        self.__play_btn = QPushButton(self)
-        self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
+        self.__play_btn = QPushButton("播放", self)
+#        self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
         self.__play_btn.pressed.connect(self.__on_btn_play_pressed)
 
-        self.__forward_btn = QPushButton(self)
-        self.__forward_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'forward.png')))
+        self.__forward_btn = QPushButton("下一首", self)
+#        self.__forward_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'forward.png')))
         self.__forward_btn.pressed.connect(self.__on_btn_forward_pressed)
 
 
-        self.__stop_btn = QPushButton(self)
-        self.__stop_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'stop.png')))
+        self.__stop_btn = QPushButton("停止", self)
+#        self.__stop_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'stop.png')))
         self.__stop_btn.pressed.connect(self.__on_btn_stop_pressed)
 
         # 播放时间
@@ -116,11 +116,14 @@ class Player(QWidget):
 
     def __on_player_state_changed(self, state):
         if state == QMediaPlayer.PlayingState:
-            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'pause.png')))
+            self.__play_btn.setText("暂停")
+#            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'pause.png')))
         elif state == QMediaPlayer.PausedState:
-            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
+            self.__play_btn.setText("播放")
+#            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
         elif state == QMediaPlayer.StoppedState:
-            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
+            self.__play_btn.setText("播放")
+#            self.__play_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'play.png')))
             self.__time_slider.setValue(0)
             self.__time_label1.setText('00:00')
         # 重绘播放控件
