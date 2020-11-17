@@ -91,10 +91,6 @@ class VoiceTans(QWidget):
             if self.exit_files2trasn() and (not self.voice_trans_thread):
                 self.voice_trans_thread = VoiceTransThread(self.__files)
                 self.voice_trans_thread.trans_end.connect(self.voice_trans_end)
-                for file in self.__files:
-                    if file.file_status == 'Success':
-                        continue
-                    file.file_status = 'Running'
                 self.timer.start(200)
                 self.voice_trans_thread.start()
 
@@ -103,9 +99,6 @@ class VoiceTans(QWidget):
         if isinstance(thread_back[0], str):
             QMessageBox(QMessageBox.Warning, '警告', ''.join(thread_back)).exec()
         elif isinstance(thread_back[0], File):
-            # 转写完成之后更新文件的信息
-            self.__files = thread_back
-
             # 设置各个控件的状态
             self.__text.appendPlainText(self.__files[0].get_file_txt())
 

@@ -18,6 +18,7 @@ class VoiceTransThread(QThread):
             if file.file_status == 'Success':
                 continue
             else:
+                file.file_status = 'Running'
                 ret = self.get_txt_data(file)
 
             if isinstance(ret, str):
@@ -59,7 +60,7 @@ class VoiceTransThread(QThread):
                     file.file_status = json.loads(res.text)['task_status']
                     break
             except Exception:
-                return 'json load error'
+                return '语音转写传输失败'
             time.sleep(1)
 
     def send_file(self, file_name, ip, port):
@@ -72,20 +73,24 @@ class VoiceTransThread(QThread):
         try:
             clinet.connect((ip, port))
         except Exception:
-            return 'connection error'
+            return '连接失败'
 
 
         file = open(file_name, 'rb')
         while True:
-            # 接受套接字的大小
-            data = file.read(10*1024*1024)
-            clinet.sendall(os.path.basename(file_name).encode('utf-8'))
-            time.sleep(2)
-            if str(data) != "b''":
-                clinet.send(data)
-                # print(data)  # 此处打印注意被刷屏,仅测试用
-            else:
-                break
+            try:
+                # 接受套接字的大小
+                data = file.read(10*1024*1024)
+                clinet.sendall(os.path.basename(file_name).encode('utf-8'))
+                time.sleep(2)
+                if str(data) != "b''":
+                    clinet.send(data)
+                    # print(data)  # 此处打印注意被刷屏,仅测试用
+                else:
+                    break
+            except Exception:
+                return '发送文件失败'
+
         file.close()
         # 发送成功指令
         clinet.send('upload_finished'.encode())
@@ -105,5 +110,5 @@ class VoiceTransThread(QThread):
             print(f"已经运行{round(AlL_time, 1)}s")
             return taskid.decode('utf-8')
         except Exception:
-            return 'send file recv error'
+            return '接受文件失败'
 
