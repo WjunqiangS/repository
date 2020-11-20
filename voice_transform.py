@@ -20,6 +20,7 @@ class VoiceTransThread(QThread):
             else:
                 file.file_status = 'Running'
                 ret = self.get_txt_data(file)
+                time.sleep(2)
 
             if isinstance(ret, str):
                 self.trans_end.emit(list(ret))
@@ -59,7 +60,8 @@ class VoiceTransThread(QThread):
                 elif json.loads(res.text)['task_status'] == "Failure":
                     file.file_status = json.loads(res.text)['task_status']
                     break
-            except Exception:
+            except Exception as e:
+                print(e)
                 return '语音转写传输失败'
             time.sleep(1)
 
@@ -72,7 +74,9 @@ class VoiceTransThread(QThread):
 
         try:
             clinet.connect((ip, port))
-        except Exception:
+            clinet.settimeout(10)
+        except Exception as e:
+            print(e)
             return '连接失败'
 
 
@@ -88,7 +92,8 @@ class VoiceTransThread(QThread):
                     # print(data)  # 此处打印注意被刷屏,仅测试用
                 else:
                     break
-            except Exception:
+            except Exception as e:
+                print(e)
                 return '发送文件失败'
 
         file.close()
@@ -109,6 +114,7 @@ class VoiceTransThread(QThread):
             AlL_time = end_time - start_time
             print(f"已经运行{round(AlL_time, 1)}s")
             return taskid.decode('utf-8')
-        except Exception:
+        except Exception as e:
+            print(e)
             return '接受文件失败'
 
