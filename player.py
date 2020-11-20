@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QSlider, QStyleFactory, QDialog
-from PyQt5.QtGui import QIcon, QMouseEvent
+from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QLabel, QSlider, QStyleFactory, QDialog, QHBoxLayout
+from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtCore import Qt, QTimer, QEvent, QUrl, pyqtSignal, QTime
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaPlaylist, QMediaContent
 
@@ -32,7 +32,6 @@ class Player(QWidget):
 
 
     def __control_layouy(self):
-        glayout = QGridLayout()
         # 播放控制按钮初始化
         self.__back_btn = QPushButton("上一首", self)
 #        self.__back_btn.setIcon(QIcon(os.path.join(os.path.join(os.getcwd(), 'RES'), 'back.png')))
@@ -65,13 +64,18 @@ class Player(QWidget):
         self.__time_slider.sliderMoved.connect(self.__on_slider_moved)
 
         # 设置播放按钮的布局
-        glayout.addWidget(self.__time_label1, 0, 0, 1, 1)
-        glayout.addWidget(self.__time_slider, 0, 1, 1, 12)
-        glayout.addWidget(self.__time_label2, 0, 13)
-        glayout.addWidget(self.__back_btn, 1, 1, 1, 3)
-        glayout.addWidget(self.__play_btn, 1, 4, 1, 3)
-        glayout.addWidget(self.__forward_btn, 1, 7, 1, 3)
-        glayout.addWidget(self.__stop_btn, 1, 10, 1, 3)
+        glayout = QGridLayout()
+        hlayout_1 = QHBoxLayout()
+        hlayout_2 = QHBoxLayout()
+        hlayout_1.addWidget(self.__time_label1)
+        hlayout_1.addWidget(self.__time_slider)
+        hlayout_1.addWidget(self.__time_label2)
+        hlayout_2.addWidget(self.__back_btn)
+        hlayout_2.addWidget(self.__play_btn)
+        hlayout_2.addWidget(self.__forward_btn)
+        hlayout_2.addWidget(self.__stop_btn)
+        glayout.addLayout(hlayout_1, 0, 0)
+        glayout.addLayout(hlayout_2, 1, 0)
 
         self.setLayout(glayout)
 
