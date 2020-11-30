@@ -59,19 +59,22 @@ class FileList(QWidget):
 
         # 把打开的文件都保存到文件列表中
         for str in files_path:
-            exist_flag = 0
-            for exit_file in self.__list_model.stringList():
-                if os.path.basename(str).split('.')[0] == exit_file.split('.')[0]:
-                    exist_flag = 1
-                    break
-            if not exist_flag:
-                if re.match('.*\.V3', file_type):
-                    with open(str, 'rb') as f:
-                        raw_data = f.read()
-                    str = os.path.join(os.path.dirname(str), os.path.basename(str).split('.')[0] + '.wav')
-                    wave_write = alaw2pcm(str, 1, 8000, 8)
-                    wave_write.write(raw_data)
-                    wave_write.close()
+            self.add_file(str, file_type)
+
+    def add_file(self, str, file_type):
+        exist_flag = 0
+        for exit_file in self.__list_model.stringList():
+            if os.path.basename(str).split('.')[0] == exit_file.split('.')[0]:
+                exist_flag = 1
+                break
+        if not exist_flag:
+            if re.match('.*\.[V3|wav]', file_type):
+                with open(str, 'rb') as f:
+                    raw_data = f.read()
+                str = os.path.join(os.path.dirname(str), os.path.basename(str).split('.')[0] + '.wav')
+                wave_write = alaw2pcm(str, 1, 8000, 8)
+                wave_write.write(raw_data)
+                wave_write.close()
 
                 file = File(str)
                 # 打开文件之后给开始转写发送信号，表示已经拿到文件
@@ -82,12 +85,11 @@ class FileList(QWidget):
                 index = self.__list_model.index(self.__list_model.rowCount() - 1)
                 # 给增加的行设置数据
                 self.__list_model.setData(index, file.file_name)
-#                self.__list_model.setData(index, file)
 
     def change_file_list_idx(self, index):
-       model_index = self.__list_model.index(index)
-       self.__list_files.setCurrentIndex(model_index)
-       self.clicked_file.emit(index)
+        model_index = self.__list_model.index(index)
+        self.__list_files.setCurrentIndex(model_index)
+        self.clicked_file.emit(index)
 
     def set_file_status(self, files):
         cur_index = 0
@@ -100,4 +102,3 @@ class FileList(QWidget):
             else:
                 self.__list_model.setData(index, file.file_name + '')
             cur_index += 1
-

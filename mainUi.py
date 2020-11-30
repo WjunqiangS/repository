@@ -4,6 +4,7 @@ from player import Player
 from filelist import FileList
 from transform import VoiceTans
 from login import Login
+import os
 
 
 class MainGui(QMainWindow):
@@ -79,6 +80,8 @@ class MainGui(QMainWindow):
         glayout.addWidget(self.save_trans_btn, 3, 0)
         glayout.addWidget(self.player, 2, 1, 2, -1)
 
+        self.setAcceptDrops(True)
+
         #设置中央控件
         central_widget = QWidget()
         central_widget.setLayout(glayout)
@@ -135,6 +138,20 @@ class MainGui(QMainWindow):
     # 当点击除了控件的其他位置的时候，设置播放器为焦点
     def mouseReleaseEvent(self, mouse_event):
         self.player.setFocus()
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls():
+            files = event.mimeData().urls()
+            for file in files:
+                self.file_list.add_file(file.toLocalFile(), os.path.basename(file.toLocalFile()))
+        else:
+            event.ignore()
 
     # 当播放器被点击时，设置为当前焦点
     def eventFilter(self, obj, event):
