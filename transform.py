@@ -99,8 +99,11 @@ class VoiceTans(QWidget):
         if isinstance(thread_back[0], str):
             QMessageBox(QMessageBox.Warning, '警告', ''.join(thread_back)).exec()
         elif isinstance(thread_back[0], File):
-            # 设置各个控件的状态
-            self.__text.appendPlainText(self.__files[0].get_file_txt())
+            if self.cur_show2text_idx != None:
+                # 设置各个控件的状态
+                self.__text.appendPlainText(self.__files[self.cur_show2text_idx].get_file_txt())
+            else:
+                self.__text.appendPlainText(self.__files[0].get_file_txt())
 
         # 退出线程
         self.voice_trans_thread.quit()

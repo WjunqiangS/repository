@@ -1,3 +1,5 @@
+import struct
+
 from PyQt5.QtCore import pyqtSignal, QThread
 import time
 import json
@@ -36,7 +38,6 @@ class VoiceTransThread(QThread):
         header = {'Content-Type': 'application/json'}
         while True:
             url = f"http://speech.yuntrans.cn:5003/process?taskid={taskid}"
-            print(url)
             try:
                 # if you not sleep you will gat 500 error
                 time.sleep(1)
@@ -54,7 +55,7 @@ class VoiceTransThread(QThread):
                         text_end = i['end_time']
                         file.voice_msg.append({'text':text, 'text_begin': text_begin, 'text_end': text_end})
                     file.file_status = json.loads(res.text)['task_status']
-                    break
+                    return 0
                 elif json.loads(res.text)['task_status'] == "Running":
                     file.file_status = json.loads(res.text)['task_status']
                 elif json.loads(res.text)['task_status'] == "Failure":
@@ -65,56 +66,76 @@ class VoiceTransThread(QThread):
                 return '语音转写传输失败'
             time.sleep(1)
 
-    def send_file(self, file_name, ip, port):
+    def send_file(self, file_path, ip, port):
+        # 获取文件
+        # 如果文件不存在
+        if not os.path.exists(file_path):
+            print('文件不存在')
+            return '文件不存在'
+
         """发送文件到服务器"""
-        start_time = time.time()
+        # 循环读入文件大小
+        file_read_size = 10 * 1024 * 1024
 
-        print(f"[*]正在连接{ip}:{port}")
-        clinet = socket(AF_INET, SOCK_STREAM)
-
+        # 客户端连接服务端用到的 Socket 服务
+        client = socket(AF_INET, SOCK_STREAM)
         try:
-            clinet.connect((ip, port))
-            clinet.settimeout(10)
+            # 连接 Socket 服务端
+            client.connect((ip, port))
         except Exception as e:
             print(e)
-            return '连接失败'
+            client.close()
+            return '连接服务器失败'
+        # 获取文件名
+        file_name = (os.path.split(file_path))[1]
 
+        # 获取文件大小
+        size = os.path.getsize(file_path)
 
-        file = open(file_name, 'rb')
-        while True:
-            try:
-                # 接受套接字的大小
-                data = file.read(10*1024*1024)
-                clinet.sendall(os.path.basename(file_name).encode('utf-8'))
-                time.sleep(2)
-                if str(data) != "b''":
-                    clinet.send(data)
-                    # print(data)  # 此处打印注意被刷屏,仅测试用
+        # 文件信息
+        hander = {
+            'file_name': file_name,
+            'length': size,
+            'file_read_size': file_read_size,
+        }
+
+        # 报头序列化
+        hander_json = json.dumps(hander)
+
+        # 报头bytes转换
+        hander_bytes = hander_json.encode('utf-8')
+
+        # 报头长度固定
+        s_hander = struct.pack('i', len(hander_bytes))
+        try:
+            # 传输报头长度
+            client.send(s_hander)
+
+            # 传输报头数据
+            client.send(hander_bytes)
+        except Exception as e:
+            print(e)
+            client.close()
+            return '发送文件头数据失败'
+
+        # 以二进制 binary 读取文件
+        with open(file_path, 'rb') as f:
+            # 读入文件
+            times = 0  # 正在发送的进度
+            while (True):
+                temp_date = bytes()
+                temp_date += f.read(file_read_size)
+                if (len(temp_date) > 0):
+                    # 传输文件数据
+                    client.send(temp_date)
+                    times += 1
                 else:
                     break
-            except Exception as e:
-                print(e)
-                return '发送文件失败'
 
-        file.close()
-        # 发送成功指令
-        clinet.send('upload_finished'.encode())
-        # 发送 process 指令 查询进度
-        try:
-            commd = clinet.recv(1024)
-            print(commd.decode('utf-8'))
-            if commd == b"down_load_finished":
-                print("正在上传中...")
-                taskid = clinet.recv(1024)
-                print()
-                print(taskid.decode('utf-8'))
-            clinet.close()
-            print("[*]连接已关闭,等待重新连接")
-            end_time = time.time()
-            AlL_time = end_time - start_time
-            print(f"已经运行{round(AlL_time, 1)}s")
-            return taskid.decode('utf-8')
-        except Exception as e:
-            print(e)
-            return '接受文件失败'
+            # 接收返回信息
+            taskid = client.recv(1024).decode('utf-8')
+
+            client.close()
+
+            return taskid
 

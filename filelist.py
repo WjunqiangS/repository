@@ -102,6 +102,9 @@ class FileList(QWidget):
                 self.__list_model.setData(index, file.file_name + '  文件转写成功')
             elif file.file_status == 'Running':
                 self.__list_model.setData(index, file.file_name + '  文件转写中...')
+            elif file.file_status == 'Failure':
+                self.__list_model.setData(index, file.file_name + '  文件转写失败')
             else:
                 self.__list_model.setData(index, file.file_name + '')
+
             cur_index += 1
