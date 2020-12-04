@@ -22,6 +22,8 @@ class VoiceTransThread(QThread):
             else:
                 file.file_status = 'Running'
                 ret = self.get_txt_data(file)
+                if file.file_status == 'Failure':
+                   continue
                 time.sleep(2)
 
             if isinstance(ret, str):
@@ -60,7 +62,7 @@ class VoiceTransThread(QThread):
                     file.file_status = json.loads(res.text)['task_status']
                 elif json.loads(res.text)['task_status'] == "Failure":
                     file.file_status = json.loads(res.text)['task_status']
-                    break
+                    return '文件转写失败'
             except Exception as e:
                 print(e)
                 return '语音转写传输失败'
@@ -87,7 +89,7 @@ class VoiceTransThread(QThread):
             client.close()
             return '连接服务器失败'
         # 获取文件名
-        file_name = (os.path.split(file_path))[1]
+        file_name = os.path.basename(file_path)
 
         # 获取文件大小
         size = os.path.getsize(file_path)
