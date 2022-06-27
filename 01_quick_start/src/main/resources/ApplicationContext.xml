@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- id 为类取名字， class指定要管理的类 -->
+    <!-- scope 类的作用返回，默认为singleton(同一个对象) prototype(不同对象) -->
+    <bean id="bookDao" class="Priv.wangjunqiang.dao.impl.BookDaoImpl" scope="singleton"/>
+
+    <!-- name 给一个类取多个别名 -->
+    <bean id="bookService" name="service service2" class="Priv.wangjunqiang.service.impl.BookServiceImpl">
+        <!-- name 属性名 ref 绑定的类id -->
+        <property name="bookDao" ref="bookDao"/>
+    </bean>
+</beans>

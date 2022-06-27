@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图书管理页面</title>
+    <link rel="stylesheet" href="../css/index.css" />
+    <script src="../js/vue.js"></script>
+    <script src="../js/index.js"></script>
+    <script src="../js/axios.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <el-container>
+        <el-header style="padding: 0; border-bottom: 2px solid #3c8dbc">
+          <h1>图书管理</h1>
+        </el-header>
+        <el-main>
+          <el-input
+            v-model="input"
+            placeholder="图书名称"
+            style="width: 200px"></el-input>
+          <el-button icon="el-icon-search">查询</el-button>
+          <el-button type="primary" @click="newBook = true">新建</el-button>
+
+          <el-dialog title="新建书籍" :visible.sync="newBook">
+            <el-form :model="book">
+              <el-form-item label="图书名称:">
+                <el-input v-model="book.name" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="图书类别:">
+                  <el-input v-model="book.type" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="图书描述:">
+                  <el-input v-model="book.description" autocomplete="off"></el-input>
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="newBook = false">取 消</el-button>
+              <el-button type="primary" @click="addBook">
+                确 定
+              </el-button>
+            </div>
+          </el-dialog>
+
+          <template>
+            <el-table :data="tableData" style="width: 100%">
+              <el-table-column
+                prop="id"
+                label="序列"
+                width="120px"></el-table-column>
+              <el-table-column
+                prop="type"
+                label="图书类别"
+                width="220px"></el-table-column>
+              <el-table-column
+                prop="name"
+                label="图书名称"
+                width="220px"></el-table-column>
+              <el-table-column
+                prop="description"
+                label="描述"
+                width="450px"></el-table-column>
+              <el-table-column prop="description" label="操作" width="180px">
+                <template slot-scope="scope">
+                  <el-button
+                    @click="handleClick(scope.row)"
+                    type="text"
+                    size="smidle">
+                    查看
+                  </el-button>
+                  <el-button type="text" size="midle">编辑</el-button>
+                  <el-button type="text" size="midle">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+          <div class="block" style="margin-top: 20px; float: right">
+            <el-pagination
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+              :current-page="currentPage"
+              :page-sizes="[1, 2, 3, 4]"
+              :page-size="100"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="4"></el-pagination>
+          </div>
+        </el-main>
+      </el-container>
+    </div>
+  </body>
+  <script>
+    axios.defaults.baseURL = 'http://localhost/';
+    new Vue({
+      el: '#app',
+      data: function () {
+        return {
+          input: '',
+          tableData: [],
+          currentPage: 1,
+          newBook: false,
+          book: {
+            type: '',
+            name: '',
+            description: ''
+          }
+        }
+      },
+      methods: {
+        handleSizeChange(val) {
+          console.log(`每页 ${val} 条`)
+        },
+        handleCurrentChange(val) {
+          console.log(`当前页: ${val}`)
+        },
+        addBook() {
+          this.newBook = false
+          axios.post("/books", this.book)
+        }
+      },
+      async created() {
+        // 获取全部书籍
+        const res = await axios.get('/books')
+        this.tableData = res.data
+      }
+    })
+  </script>
+</html>

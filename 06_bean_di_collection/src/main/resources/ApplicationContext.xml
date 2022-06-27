@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <bean id="bookDao" class="Priv.wangjunqiang.dao.impl.BookDaoImpl" scope="singleton">
+        <property name="array">
+            <array>
+                <value>100</value>
+                <value>101</value>
+                <value>102</value>
+                <value>103</value>
+                <value>104</value>
+            </array>
+        </property>
+
+        <property name="list">
+            <list>
+                <value>woshi</value>
+                <value>wangjunqiang</value>
+                <value>nihao</value>
+            </list>
+        </property>
+        <property name="map">
+            <map>
+                <entry key="country" value="china"/>
+                <entry key="province" value="yunnan"/>
+                <entry key="city" value="kunming"/>
+            </map>
+        </property>
+        <property name="set">
+            <set>
+                <value>123</value>
+                <value>123</value>
+                <value>456</value>
+                <value>789</value>
+            </set>
+        </property>
+        <property name="properties">
+            <props>
+                <prop key="country">china</prop>
+                <prop key="province">yunnan</prop>
+                <prop key="city">kunming</prop>
+            </props>
+        </property>
+    </bean>
+</beans>

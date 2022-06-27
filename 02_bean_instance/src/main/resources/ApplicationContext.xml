@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 第一种：使用默认无参构造函数构造Bean对象 -->
+    <!--<bean id="bookDao" class="Priv.wangjunqiang.dao.impl.BookDaoImpl" scope="singleton"/>-->
+
+    <!--<bean id="bookService" name="service service2" class="Priv.wangjunqiang.service.impl.BookServiceImpl">-->
+    <!--    &lt;!&ndash; name 属性名 ref 绑定的类id &ndash;&gt;-->
+    <!--    <property name="bookDao" ref="bookDao"/>-->
+    <!--</bean>-->
+
+    <!-- 第二种：使用静态工厂构造Bean对象 -->
+    <!--<bean id="orderDao" class="Priv.wangjunqiang.factory.OrderDaoFactory" factory-method="getOrderDao"/>-->
+
+    <!-- 第三种：实例创建Bean对象 -->
+    <!--<bean id="userDaoFactory" class="Priv.wangjunqiang.factory.UserDaoFactory"/>-->
+
+    <!--<bean id="userDao" factory-method="getUserDao" factory-bean="userDaoFactory"/>-->
+
+    <!-- 第三种的变体 -->
+    <bean id="userDao" class="Priv.wangjunqiang.factory.UserDaoFactoryBean"/>
+
+</beans>

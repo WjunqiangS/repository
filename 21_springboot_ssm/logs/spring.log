@@ -1,0 +1,6 @@
+2022-06-22 15:57:39.150  INFO 37870 --- [main] p.wangjunqiang.service.BookServiceTest   : Starting BookServiceTest using Java 17.0.2 on wangjunangdeMBP with PID 37870 (started by wangjunqiang in /Users/wangjunqiang/JavaProjects/Spring/21_springboot_ssm)
+2022-06-22 15:57:39.153  INFO 37870 --- [main] p.wangjunqiang.service.BookServiceTest   : No active profile set, falling back to 1 default profile: "default"
+2022-06-22 15:57:42.161  INFO 37870 --- [main] p.wangjunqiang.service.BookServiceTest   : Started BookServiceTest in 4.052 seconds (JVM running for 6.97)
+2022-06-22 15:57:43.559  INFO 37870 --- [main] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} inited
+2022-06-22 15:57:43.939  INFO 37870 --- [SpringApplicationShutdownHook] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} closing ...
+2022-06-22 15:57:43.958  INFO 37870 --- [SpringApplicationShutdownHook] com.alibaba.druid.pool.DruidDataSource   : {dataSource-1} closed
